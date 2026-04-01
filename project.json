@@ -1,0 +1,64 @@
+{
+   "name": "api",
+   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+   "sourceRoot": "apps/be/src",
+   "projectType": "application",
+   "tags": [],
+   "targets": {
+      "dev": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run dev",
+            "cwd": "apps/be"
+         }
+      },
+      "dev:bot": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run dev:bot",
+            "cwd": "apps/be"
+         }
+      },
+      "build": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run build",
+            "cwd": "apps/be"
+         },
+         "outputs": [
+            "{projectRoot}/dist"
+         ]
+      },
+      "start": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run start",
+            "cwd": "apps/be"
+         },
+         "dependsOn": [
+            "build"
+         ]
+      },
+      "lint": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run lint",
+            "cwd": "apps/be"
+         }
+      },
+      "migration:generate": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run migration:generate",
+            "cwd": "apps/be"
+         }
+      },
+      "migrate": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "npm run migrate",
+            "cwd": "apps/be"
+         }
+      }
+   }
+}
