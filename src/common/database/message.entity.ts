@@ -9,10 +9,10 @@ export default class MessageEntity extends AbstractAuditEntity {
   @Column({ type: 'varchar', default: 'reply' })
   type: 'reply' | 'dm';
 
-  @Column()
+  @Column({ type: 'varchar' })
   ownerId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   channelId: string;
 
   @Column({ default: null, nullable: true, type: 'int' })

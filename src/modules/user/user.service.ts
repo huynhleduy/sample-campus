@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CRUDService } from '@src/common/utils/crud';
 import { isEmpty } from 'lodash';
 import { In, Repository } from 'typeorm';
 import UserEntity from './user.entity';
@@ -11,12 +12,15 @@ type UpsertUserMeta = {
 };
 
 @Injectable()
-export class UserService {
+export class UserService extends CRUDService<UserEntity> {
   private readonly logger = new Logger(UserService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-  ) {}
+  ) {
+    super(userRepository);
+  }
 
   private async create(user: Partial<UserEntity>) {
     const newUser = this.userRepository.create(user);

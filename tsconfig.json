@@ -16,8 +16,10 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "#src/*": ["src/*"],
       "@src/*": ["src/*"],
-      "@nezon": ["src/libs/nezon"]
+      "@nezon": ["src/libs/nezon"],
+      "#jest": ["test/jest/index.ts"]
     },
     "incremental": true,
     "strictNullChecks": true,
@@ -25,8 +27,17 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "strictPropertyInitialization": false,
-    "strict": false
+    "strict": false,
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*", "__tests__/*.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": [
+    "src/**/*",
+    "database/**/*.ts",
+    "typeorm.config.ts",
+    "ormconfig.ts",
+    "test/**/*.ts",
+    "jest.config.ts",
+    "types.d.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }
