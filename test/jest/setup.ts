@@ -63,7 +63,9 @@ async function fallbackToLocalDatabase(
     return await setupDB(databaseNamePrefix, maxWorkers);
   } catch (error) {
     const reason =
-      error instanceof Error ? error.message : 'Unknown database connection error';
+      error instanceof Error
+        ? error.message
+        : 'Unknown database connection error';
 
     throw new Error(
       `Testcontainers is unavailable, and fallback local database connection failed ` +

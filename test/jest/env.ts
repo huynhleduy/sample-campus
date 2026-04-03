@@ -8,8 +8,7 @@ process.env.CLIENT_ID = process.env.CLIENT_ID ?? 'test-client-id';
 process.env.CLIENT_SECRET = process.env.CLIENT_SECRET ?? 'test-client-secret';
 process.env.OAUTH_URL = process.env.OAUTH_URL ?? 'https://oauth.example.test';
 process.env.MEZON_BOT_ID = process.env.MEZON_BOT_ID ?? 'test-bot-id';
-process.env.MEZON_BOT_TOKEN =
-  process.env.MEZON_BOT_TOKEN ?? 'test-bot-token';
+process.env.MEZON_BOT_TOKEN = process.env.MEZON_BOT_TOKEN ?? 'test-bot-token';
 
 if ((global as any).__DB_NAME_PREFIX__) {
   process.env.DB_DATABASE = `${(global as any).__DB_NAME_PREFIX__}-database-${

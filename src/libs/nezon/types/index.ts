@@ -1,7 +1,9 @@
-import type { ChannelMessage as MezonChannelMessage } from 'mezon-sdk';
-import type { MezonClient } from 'mezon-sdk';
-import type { TokenSentEvent } from 'mezon-sdk';
-import { Events as MezonEvents } from 'mezon-sdk';
+import {
+  ChannelMessage as MezonChannelMessage,
+  type MezonClient,
+  type TokenSentEvent,
+  Events as MezonEvents,
+} from 'mezon-sdk';
 import type { Message as MezonMessage } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
 import type { TextChannel as MezonTextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
 import type { Clan as MezonClan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
@@ -49,6 +51,7 @@ import * as EmbedModule from '../messaging/embed-builder';
 import type { EmbedData } from '../messaging/embed-builder';
 import type { NezonUtilsService as NezonUtilsServiceType } from '../services/nezon-utils.service';
 
+/* eslint-disable @typescript-eslint/no-namespace -- ergonomic Nezon.* type surface for consumers */
 /**
  * Convenience namespace that re-exports the most common mezon-sdk types and
  * Nezon-specific helpers. Consumers can import `Nezon` alongside the decorators
@@ -92,9 +95,9 @@ export namespace Nezon {
   export type ChannelHelper = ChannelHelperType;
 
   export namespace AutoContextType {
-    export type Message = ManagedMessageType;
-    export type DM = DMHelperType;
-    export type Channel = ChannelHelperType;
+    export type AutoMessage = ManagedMessageType;
+    export type AutoDm = DMHelperType;
+    export type AutoChannel = ChannelHelperType;
   }
 
   export type Button = ButtonComponent;
@@ -132,5 +135,3 @@ export namespace Nezon {
 
   export const Events = MezonEvents;
 }
-
-export type { NezonUtilsService } from '../services/nezon-utils.service';

@@ -78,18 +78,12 @@ export class NezonEventsService {
   private bind(definitions: NezonEventDefinition[]) {
     for (const definition of definitions) {
       const boundHandler = (...args: any[]) => {
-        try {
-          const result = this.executeEvent(definition, args);
-          if (result && typeof (result as Promise<any>).then === 'function') {
-            (result as Promise<any>).catch((error: any) => {
-              this.logger.error('event handler failed');
-              console.error(error);
-            });
-          }
-        } catch (error) {
-          this.logger.error('event handler failed');
-          console.error(error);
-        }
+        void Promise.resolve()
+          .then(() => this.executeEvent(definition, args))
+          .catch((error: unknown) => {
+            this.logger.error('event handler failed');
+            console.error(error);
+          });
       };
       if (definition.once) {
         this.eventEmitter.once(definition.event, boundHandler);
@@ -183,28 +177,12 @@ export class NezonEventsService {
     const channelId: string | undefined = payload?.channel_id;
     const userId: string | undefined =
       payload?.sender_id ?? payload?.user_id ?? payload?.creator_id;
-    if (
-      merged.clans &&
-      merged.clans.length &&
-      (!clanId || !merged.clans.includes(clanId))
-    ) {
-      return false;
-    }
-    if (
-      merged.channels &&
-      merged.channels.length &&
-      (!channelId || !merged.channels.includes(channelId))
-    ) {
-      return false;
-    }
-    if (
-      merged.users &&
-      merged.users.length &&
-      (!userId || !merged.users.includes(userId))
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      (merged.clans?.length && (!clanId || !merged.clans.includes(clanId))) ||
+      (merged.channels?.length &&
+        (!channelId || !merged.channels.includes(channelId))) ||
+      (merged.users?.length && (!userId || !merged.users.includes(userId)))
+    );
   }
 
   private mergeRestricts(
@@ -244,7 +222,7 @@ export class NezonEventsService {
     const size = Math.max(...parameters.map((param) => param.index), -1) + 1;
     const resolved = new Array(size).fill(undefined);
     for (const param of parameters) {
-      let value: any = undefined;
+      let value: any;
       switch (param.type) {
         case NezonParamType.CONTEXT:
           value = args;

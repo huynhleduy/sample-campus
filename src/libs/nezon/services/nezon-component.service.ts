@@ -157,9 +157,8 @@ export class NezonComponentService {
       try {
         const handler = registry.getHandler(buttonId);
         if (handler) {
-          const clickContext = await this.createButtonClickContext(
-            componentContext,
-          );
+          const clickContext =
+            await this.createButtonClickContext(componentContext);
           await handler(clickContext);
           return;
         }
@@ -288,28 +287,12 @@ export class NezonComponentService {
     const clanId: string | undefined = (payload as any).clan_id;
     const channelId: string | undefined = (payload as any).channel_id;
     const userId: string | undefined = (payload as any).user_id;
-    if (
-      merged.clans &&
-      merged.clans.length &&
-      (!clanId || !merged.clans.includes(clanId))
-    ) {
-      return false;
-    }
-    if (
-      merged.channels &&
-      merged.channels.length &&
-      (!channelId || !merged.channels.includes(channelId))
-    ) {
-      return false;
-    }
-    if (
-      merged.users &&
-      merged.users.length &&
-      (!userId || !merged.users.includes(userId))
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      (merged.clans?.length && (!clanId || !merged.clans.includes(clanId))) ||
+      (merged.channels?.length &&
+        (!channelId || !merged.channels.includes(channelId))) ||
+      (merged.users?.length && (!userId || !merged.users.includes(userId)))
+    );
   }
 
   private mergeRestricts(
@@ -349,7 +332,7 @@ export class NezonComponentService {
     const size = Math.max(...parameters.map((param) => param.index), -1) + 1;
     const args = new Array<unknown>(size).fill(undefined);
     for (const param of parameters) {
-      let value: unknown = undefined;
+      let value: unknown;
       switch (param.type) {
         case NezonParamType.CONTEXT:
           value = context;
@@ -382,7 +365,7 @@ export class NezonComponentService {
         case NezonParamType.ARG:
           value =
             typeof param.data === 'number'
-              ? context.params[param.data] ?? undefined
+              ? (context.params[param.data] ?? undefined)
               : undefined;
           break;
         case NezonParamType.ATTACHMENTS: {
@@ -535,9 +518,8 @@ export class NezonComponentService {
     context: NezonComponentContext,
   ): Promise<[ManagedMessage, DMHelper, ChannelHelper]> {
     return this.getOrSetCache(context, this.cacheKeys.autoContext, async () => {
-      const commandContext = await this.createCommandContextFromComponent(
-        context,
-      );
+      const commandContext =
+        await this.createCommandContextFromComponent(context);
       const helpers = {
         normalize: (input) => this.normalizeSmartMessage(input),
       };
@@ -683,7 +665,7 @@ export class NezonComponentService {
     const pattern =
       typeof options.pattern === 'string'
         ? new RegExp(options.pattern)
-        : options.pattern ?? null;
+        : (options.pattern ?? null);
 
     const hasNamedParams = patternString?.includes(':');
     let namedParamNames: string[] = [];
@@ -709,7 +691,7 @@ export class NezonComponentService {
       }
 
       let match: RegExpMatchArray | null = null;
-      let namedParams: Record<string, string> | undefined = undefined;
+      let namedParams: Record<string, string> | undefined;
 
       if (hasNamedParams && regexPattern) {
         match = id.match(regexPattern);

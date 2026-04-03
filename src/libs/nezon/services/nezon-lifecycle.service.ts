@@ -25,7 +25,7 @@ export class NezonLifecycleService
   async onApplicationBootstrap() {
     if (process.env.NEZON_DISABLE_BOOTSTRAP === 'true') {
       this.logger.warn(
-        'Skipping Nezon bootstrap because NEZON_DISABLE_BOOTSTRAP=true',
+        'Skipping Nezon bootstrap; NEZON_DISABLE_BOOTSTRAP is enabled',
       );
       return;
     }

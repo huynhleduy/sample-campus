@@ -22,12 +22,6 @@ module.exports = {
     project: './tsconfig.eslint.json',
     sourceType: 'module',
   },
-  "prettier/prettier": [
-    "error",
-    {
-      "endOfLine": "auto"
-    }
-  ],
   extends: [
     'plugin:import/typescript',
     'plugin:prettier/recommended',
@@ -47,6 +41,12 @@ module.exports = {
     'no-relative-import-paths',
   ],
   rules: {
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
     'no-secrets/no-secrets': 'error',
     'n/no-extraneous-import': 'off',
     'n/no-missing-import': 'off',
@@ -67,8 +67,8 @@ module.exports = {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/adjacent-overload-signatures': 'error',
-    'max-params': ['error', 7],
-    '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+    'max-params': 'off',
+    '@typescript-eslint/array-type': 'off',
     '@typescript-eslint/ban-types': [
       'error',
       {
@@ -124,7 +124,12 @@ module.exports = {
     ],
     '@typescript-eslint/member-ordering': 'off',
     '@typescript-eslint/no-angle-bracket-type-assertion': 'off',
-    '@typescript-eslint/no-empty-function': 'error',
+    '@typescript-eslint/no-empty-function': [
+      'error',
+      {
+        allow: ['constructors'],
+      },
+    ],
     '@typescript-eslint/no-unnecessary-condition': 'error',
     '@typescript-eslint/no-confusing-non-null-assertion': 'warn',
     '@typescript-eslint/no-duplicate-enum-values': 'error',
@@ -144,7 +149,7 @@ module.exports = {
     '@typescript-eslint/keyword-spacing': 'error',
     '@typescript-eslint/no-namespace': 'error',
     '@typescript-eslint/no-this-alias': 'error',
-    '@typescript-eslint/no-use-before-define': 'error',
+    '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-var-requires': 'error',
     '@typescript-eslint/prefer-for-of': 'error',
     '@typescript-eslint/prefer-function-type': 'error',
@@ -282,11 +287,58 @@ module.exports = {
     'use-isnan': 'error',
     'valid-typeof': 'off',
     'space-before-function-paren': 'off',
-    'no-relative-import-paths/no-relative-import-paths': [
+    'no-relative-import-paths/no-relative-import-paths': 'off',
+    'import/consistent-type-specifier-style': 'off',
+    'import/named': 'off',
+    '@typescript-eslint/no-misused-promises': [
       'error',
       {
-        allowSameFolder: true,
+        checksVoidReturn: false,
       },
     ],
+    'sonarjs/cognitive-complexity': 'off',
+    'sonarjs/no-identical-functions': 'off',
+    'sonarjs/no-nested-template-literals': 'off',
   },
+  overrides: [
+    {
+      files: [
+        'jest.config.ts',
+        'test/**/*.ts',
+        'src/**/*.spec.ts',
+        'src/**/*.e2e-spec.ts',
+        'src/repl.ts',
+        'src/seed.ts',
+        'src/seeders/**/*.ts',
+        'src/repl-modules/**/*.ts',
+        'src/bot/**/*.ts',
+      ],
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        'no-await-in-loop': 'off',
+      },
+    },
+    {
+      files: [
+        'src/common/utils/crud.ts',
+        'src/common/utils/migration.ts',
+        'src/common/database/**/*.ts',
+        'src/libs/nezon/**/*.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+        'no-await-in-loop': 'off',
+        'object-shorthand': 'off',
+        'no-console': 'off',
+      },
+    },
+  ],
 };

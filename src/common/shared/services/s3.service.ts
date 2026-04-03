@@ -4,7 +4,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AppConfigService } from './app-config.service';
 import { GeneratorService } from './generator.service';
 
@@ -17,6 +17,7 @@ export interface PresignedUrlResponse {
 
 @Injectable()
 export class S3Service {
+  private readonly logger = new Logger(S3Service.name);
   private s3Client: S3Client;
   private bucket: string;
   private publicUrl: string;
@@ -50,7 +51,7 @@ export class S3Service {
   async getPresignedUploadUrl(
     fileName: string,
     contentType: string,
-    folder: string = 'penalties/evidence',
+    folder = 'penalties/evidence',
   ): Promise<PresignedUrlResponse> {
     // Generate unique file key
     const fileExtension = fileName.split('.').pop();
@@ -72,14 +73,9 @@ export class S3Service {
     // Generate the final public URL for R2
     const fileUrl = `${this.publicUrl}/${this.bucket}/${key}`;
 
-    console.log('Generated presigned URL:', {
-      uploadUrl,
-      fileUrl,
-      bucket: this.bucket,
-      key,
-      endpoint: this.appConfigService.s3Config.endpoint,
-      publicUrl: this.publicUrl,
-    });
+    this.logger.debug(
+      `Presigned upload URL generated key=${key} bucket=${this.bucket} publicUrl=${this.publicUrl}`,
+    );
 
     return {
       uploadUrl,
@@ -110,7 +106,7 @@ export class S3Service {
 
   async getMultiplePresignedUrls(
     files: Array<{ fileName: string; contentType: string }>,
-    folder: string = 'penalties/evidence',
+    folder = 'penalties/evidence',
   ): Promise<PresignedUrlResponse[]> {
     const promises = files.map((file) =>
       this.getPresignedUploadUrl(file.fileName, file.contentType, folder),

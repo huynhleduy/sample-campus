@@ -24,10 +24,7 @@ export class SeederService {
     return this.databaseSeeder.createBotMessages(count, input);
   }
 
-  createButtonClicks(
-    count = 1,
-    input: Partial<MessageButtonClicked> = {},
-  ) {
+  createButtonClicks(count = 1, input: Partial<MessageButtonClicked> = {}) {
     return this.databaseSeeder.createButtonClicks(count, input);
   }
 }

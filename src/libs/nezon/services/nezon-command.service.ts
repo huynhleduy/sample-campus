@@ -90,7 +90,7 @@ export class NezonCommandService {
   private async bindListener() {
     const client = this.clientService.getClient();
     if (typeof (client as any).onChannelMessage === 'function') {
-      await client.onChannelMessage(async (message: ChannelMessage) => {
+      client.onChannelMessage(async (message: ChannelMessage) => {
         try {
           await this.handleMessage(message);
         } catch (error) {
@@ -226,28 +226,12 @@ export class NezonCommandService {
     const clanId = context.message.clan_id;
     const channelId = context.message.channel_id;
     const userId = context.message.sender_id;
-    if (
-      merged.clans &&
-      merged.clans.length &&
-      (!clanId || !merged.clans.includes(clanId))
-    ) {
-      return false;
-    }
-    if (
-      merged.channels &&
-      merged.channels.length &&
-      (!channelId || !merged.channels.includes(channelId))
-    ) {
-      return false;
-    }
-    if (
-      merged.users &&
-      merged.users.length &&
-      (!userId || !merged.users.includes(userId))
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      (merged.clans?.length && (!clanId || !merged.clans.includes(clanId))) ||
+      (merged.channels?.length &&
+        (!channelId || !merged.channels.includes(channelId))) ||
+      (merged.users?.length && (!userId || !merged.users.includes(userId)))
+    );
   }
 
   private mergeRestricts(
@@ -313,7 +297,7 @@ export class NezonCommandService {
         return context.args;
       case NezonParamType.ARG:
         return typeof param.data === 'number'
-          ? context.args[param.data] ?? undefined
+          ? (context.args[param.data] ?? undefined)
           : undefined;
       case NezonParamType.ATTACHMENTS: {
         const attachments = Array.isArray(context.message?.attachments)
@@ -563,7 +547,7 @@ export class NezonCommandService {
         if (!entity) {
           return undefined;
         }
-        return await entity.reply(...replyArgs);
+        return entity.reply(...replyArgs);
       },
       getChannel: () => this.getChannel(context),
       getClan: () => this.getClan(context),

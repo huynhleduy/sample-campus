@@ -1,6 +1,8 @@
 import { Inject } from '@nestjs/common';
-import type { ChannelMessage } from 'mezon-sdk';
-import { MezonClient as MezonClientClass } from 'mezon-sdk';
+import {
+  type ChannelMessage,
+  MezonClient as MezonClientClass,
+} from 'mezon-sdk';
 import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
 import type { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 import 'reflect-metadata';
@@ -292,17 +294,17 @@ export function ComponentTarget(): ParameterDecorator {
  * ```ts
  * @Command('dm')
  * async onDM(
- *   @AutoContext('message') message: Nezon.AutoContextType.Message,
- *   @AutoContext('dm') dm: Nezon.AutoContextType.DM,
+ *   @AutoContext('message') message: Nezon.AutoContextType.AutoMessage,
+ *   @AutoContext('dm') dm: Nezon.AutoContextType.AutoDm,
  * ) {
  *   await dm.send(userId, SmartMessage.text('Hello!'));
  * }
  * ```
  *
  * Available keys:
- * - `'message'` - Returns `ManagedMessage` (type: `Nezon.AutoContextType.Message`)
- * - `'dm'` - Returns `DMHelper` (type: `Nezon.AutoContextType.DM`)
- * - `'channel'` - Returns `ChannelHelper` (type: `Nezon.AutoContextType.Channel`)
+ * - `'message'` - Returns `ManagedMessage` (type: `Nezon.AutoContextType.AutoMessage`)
+ * - `'dm'` - Returns `DMHelper` (type: `Nezon.AutoContextType.AutoDm`)
+ * - `'channel'` - Returns `ChannelHelper` (type: `Nezon.AutoContextType.AutoChannel`)
  *
  * Combine với `Nezon.SmartMessage` để dựng payload gửi tin nhắn một cách an toàn.
  */

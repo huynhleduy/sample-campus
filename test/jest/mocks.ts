@@ -4,7 +4,7 @@ const unmockedFetch = jest.fn(async (input?: string | URL | Request) => {
       ? input
       : input instanceof URL
         ? input.toString()
-        : input?.url ?? 'unknown-url';
+        : (input?.url ?? 'unknown-url');
 
   throw new Error(
     `Unexpected outbound fetch in test environment: ${url}. Mock it explicitly.`,

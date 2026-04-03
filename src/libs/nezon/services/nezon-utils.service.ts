@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MezonClient, ChannelMessage } from 'mezon-sdk';
-import type { ChannelMessageContent } from 'mezon-sdk/dist/cjs/interfaces/client';
-import type { ApiMessageAttachment } from 'mezon-sdk/dist/cjs/interfaces/client';
+import {
+  type ChannelMessageContent,
+  type ApiMessageAttachment,
+} from 'mezon-sdk/dist/cjs/interfaces/client';
 import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
 import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
 import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';

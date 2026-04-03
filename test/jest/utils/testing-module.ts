@@ -33,10 +33,9 @@ export async function createTestingApp(
   initializeTransactionalContext();
   await createModule(options);
 
-  testingApp =
-    testingModule!.createNestApplication<NestExpressApplication>(
-      new ExpressAdapter(),
-    );
+  testingApp = testingModule!.createNestApplication<NestExpressApplication>(
+    new ExpressAdapter(),
+  );
 
   const { AppModule } = await import('@src/app.module');
   const bootstrapConfig = (await import('@src/common/configs/boostrap-config'))

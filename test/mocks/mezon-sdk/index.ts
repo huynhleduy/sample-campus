@@ -1,9 +1,7 @@
 import { EventEmitter } from 'node:events';
+
 export { EMessageComponentType } from './interfaces/client';
-import {
-  mezonSdkMethodMocks,
-  resetMezonSdkMethodMocks,
-} from './method-mocks';
+import { mezonSdkMethodMocks, resetMezonSdkMethodMocks } from './method-mocks';
 import { Clan } from './mezon-client/structures/Clan';
 import { Message } from './mezon-client/structures/Message';
 import { TextChannel } from './mezon-client/structures/TextChannel';
@@ -84,7 +82,9 @@ export class MezonClient extends EventEmitter {
     return mezonSdkMethodMocks.login();
   }
 
-  async onChannelMessage(handler: (message: ChannelMessage) => Promise<unknown>) {
+  async onChannelMessage(
+    handler: (message: ChannelMessage) => Promise<unknown>,
+  ) {
     this.on(Events.ChannelMessage, handler);
     await mezonSdkMethodMocks.onChannelMessage(handler);
   }

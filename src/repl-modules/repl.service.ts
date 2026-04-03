@@ -63,10 +63,7 @@ export class ReplService {
     return messageButtonClickedFactory(input);
   }
 
-  createButtonClicks(
-    count = 1,
-    input: Partial<MessageButtonClicked> = {},
-  ) {
+  createButtonClicks(count = 1, input: Partial<MessageButtonClicked> = {}) {
     return this.seederService.createButtonClicks(count, input);
   }
 

@@ -47,10 +47,7 @@ export class DatabaseSeeder {
     );
   }
 
-  createButtonClicks(
-    count = 1,
-    input: Partial<MessageButtonClicked> = {},
-  ) {
+  createButtonClicks(count = 1, input: Partial<MessageButtonClicked> = {}) {
     return Array.from({ length: count }, (_, index) =>
       messageButtonClickedFactory({
         button_id: `button-${index + 1}`,

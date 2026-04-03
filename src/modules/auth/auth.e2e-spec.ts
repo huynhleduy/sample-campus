@@ -9,9 +9,7 @@ describe('AuthController (e2e)', () => {
 
     expect(response.body).toMatchObject({
       data: {
-        url: expect.stringContaining(
-          'https://oauth.example.test/oauth2/auth?',
-        ),
+        url: expect.stringContaining('https://oauth.example.test/oauth2/auth?'),
       },
       statusCode: 200,
     });

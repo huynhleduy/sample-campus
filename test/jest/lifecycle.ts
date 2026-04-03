@@ -5,8 +5,8 @@ import {
   resetBeforeEach,
 } from './utils/lifecycle';
 
-beforeEach(() => {
-  resetBeforeEach();
+beforeEach(async () => {
+  await resetBeforeEach();
   resetMezonSdkMocks();
 });
 afterEach(resetAfterEach, 20_000);

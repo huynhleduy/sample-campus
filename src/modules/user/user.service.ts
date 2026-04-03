@@ -64,7 +64,9 @@ export class UserService extends CRUDService<UserEntity> {
     const orConditions: Array<import('typeorm').FindOptionsWhere<UserEntity>> =
       [];
     if (ids?.length) {
-      orConditions.push({ mezonId: In(ids.map((id) => parseInt(id))) });
+      orConditions.push({
+        mezonId: In(ids.map((id) => parseInt(id, 10))),
+      });
     }
     if (mezonIds?.length) {
       orConditions.push({ mezonId: In(mezonIds) });

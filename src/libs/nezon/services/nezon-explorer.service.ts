@@ -103,9 +103,8 @@ export class NezonExplorerService {
           if (!event) {
             return;
           }
-          const once = !!this.reflector.get<boolean>(
-            NEZON_EVENT_ONCE_METADATA,
-            methodRef,
+          const once = Boolean(
+            this.reflector.get<boolean>(NEZON_EVENT_ONCE_METADATA, methodRef),
           );
           const classRestrict =
             this.reflector.get<NezonRestrictConfig | undefined>(

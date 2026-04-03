@@ -37,8 +37,8 @@
       "test:cov": "yarn test --coverage",
       "test:coverage": "yarn test --coverage",
       "test:debug": "node --inspect-brk --expose-gc ./node_modules/jest/bin/jest -c jest.config.ts --runInBand",
-      "lint": "eslint . --ext .ts",
-      "lint:fix": "eslint --fix . --ext .ts"
+      "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint . --ext .ts",
+      "lint:fix": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --fix . --ext .ts"
    },
    "imports": {
       "#src/*": "./dist/src/*",

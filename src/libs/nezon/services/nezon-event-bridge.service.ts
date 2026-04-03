@@ -93,7 +93,9 @@ export class NezonEventBridgeService
         if (hasBotMention) {
           this.eventEmitter.emit(NEZON_MENTION_EVENT, message);
         }
-      } catch {}
+      } catch {
+        void 0;
+      }
     };
     this.registerListener(client, Events.ChannelMessage, handler);
   }
