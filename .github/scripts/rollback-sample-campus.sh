@@ -16,3 +16,4 @@ echo "The workflow contract stays stable as long as the script keeps reading:"
 echo "  - DEPLOY_ENVIRONMENT"
 echo "  - ROLLBACK_TARGET"
 echo "  - ROLLBACK_REASON"
+exit 1

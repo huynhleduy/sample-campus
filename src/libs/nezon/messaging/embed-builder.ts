@@ -1,5 +1,5 @@
-import type { IInteractiveMessageProps } from 'mezon-sdk/dist/cjs/interfaces/client';
 import { EMessageComponentType } from 'mezon-sdk';
+import type { IInteractiveMessageProps } from 'mezon-sdk/dist/cjs/interfaces/client';
 
 export type { IInteractiveMessageProps as EmbedData };
 

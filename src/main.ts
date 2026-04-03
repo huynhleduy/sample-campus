@@ -27,9 +27,15 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 }
 void bootstrap();
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
+  const reasonStr =
+    reason instanceof Error
+      ? (reason.stack ?? reason.message)
+      : typeof reason === 'string'
+        ? reason
+        : JSON.stringify(reason);
   Logger.error(
-    `Unhandled Rejection at: ${promise}, reason: ${reason}`,
+    `Unhandled Rejection, reason: ${reasonStr}`,
     '',
     'UnhandledRejection',
   );

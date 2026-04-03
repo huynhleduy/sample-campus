@@ -9,13 +9,8 @@ import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { ChannelMessage, ChannelMessageContent } from 'mezon-sdk';
-import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
-import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
-import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
-import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import { NezonExplorerService } from './nezon-explorer.service';
 import { NezonClientService } from '../client/nezon-client.service';
-import type { NezonCommandContext } from '../interfaces/command-context.interface';
 import { NezonEventDefinition } from '../interfaces/event-definition.interface';
 import {
   NezonParamType,
@@ -31,11 +26,16 @@ import {
   type SmartMessageLike,
 } from '../messaging/smart-message';
 import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
+import type { NezonCommandContext } from '../interfaces/command-context.interface';
 import type {
   NezonModuleOptions,
   NezonRestrictConfig,
 } from '../nezon.module-interface';
-import { NezonExplorerService } from './nezon-explorer.service';
+import type { ChannelMessage, ChannelMessageContent } from 'mezon-sdk';
+import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
+import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
+import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 
 interface BoundEventHandler {
   event: string;
@@ -78,18 +78,12 @@ export class NezonEventsService {
   private bind(definitions: NezonEventDefinition[]) {
     for (const definition of definitions) {
       const boundHandler = (...args: any[]) => {
-        try {
-          const result = this.executeEvent(definition, args);
-          if (result && typeof (result as Promise<any>).then === 'function') {
-            (result as Promise<any>).catch((error: any) => {
-              this.logger.error('event handler failed');
-              console.error(error);
-            });
-          }
-        } catch (error) {
-          this.logger.error('event handler failed');
-          console.error(error);
-        }
+        void Promise.resolve()
+          .then(() => this.executeEvent(definition, args))
+          .catch((error: unknown) => {
+            this.logger.error('event handler failed');
+            console.error(error);
+          });
       };
       if (definition.once) {
         this.eventEmitter.once(definition.event, boundHandler);
@@ -183,28 +177,12 @@ export class NezonEventsService {
     const channelId: string | undefined = payload?.channel_id;
     const userId: string | undefined =
       payload?.sender_id ?? payload?.user_id ?? payload?.creator_id;
-    if (
-      merged.clans &&
-      merged.clans.length &&
-      (!clanId || !merged.clans.includes(clanId))
-    ) {
-      return false;
-    }
-    if (
-      merged.channels &&
-      merged.channels.length &&
-      (!channelId || !merged.channels.includes(channelId))
-    ) {
-      return false;
-    }
-    if (
-      merged.users &&
-      merged.users.length &&
-      (!userId || !merged.users.includes(userId))
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      (merged.clans?.length && (!clanId || !merged.clans.includes(clanId))) ||
+      (merged.channels?.length &&
+        (!channelId || !merged.channels.includes(channelId))) ||
+      (merged.users?.length && (!userId || !merged.users.includes(userId)))
+    );
   }
 
   private mergeRestricts(
@@ -244,7 +222,7 @@ export class NezonEventsService {
     const size = Math.max(...parameters.map((param) => param.index), -1) + 1;
     const resolved = new Array(size).fill(undefined);
     for (const param of parameters) {
-      let value: any = undefined;
+      let value: any;
       switch (param.type) {
         case NezonParamType.CONTEXT:
           value = args;

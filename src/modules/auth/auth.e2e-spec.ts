@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { http, createTestingApp, testingModule } from '#jest';
+import { createTestingApp, http, testingModule } from '#jest';
 
 describe('AuthController (e2e)', () => {
   beforeAll(createTestingApp);
@@ -9,9 +9,7 @@ describe('AuthController (e2e)', () => {
 
     expect(response.body).toMatchObject({
       data: {
-        url: expect.stringContaining(
-          'https://oauth.example.test/oauth2/auth?',
-        ),
+        url: expect.stringContaining('https://oauth.example.test/oauth2/auth?'),
       },
       statusCode: 200,
     });

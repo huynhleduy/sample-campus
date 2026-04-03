@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { BotModule } from '@src/bot/bot.module';
+
 const logger = new Logger('BotService');
 export async function bootstrap() {
   const app = await NestFactory.create(BotModule);

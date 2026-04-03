@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import UserEntity from '@src/modules/user/user.entity';
-import type { ChannelMessage } from 'mezon-sdk';
-import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 import {
   channelMessage as channelMessageFactory,
   messageButtonClicked as messageButtonClickedFactory,
   user as userFactory,
 } from '@src/repl-modules/factories';
+import type { ChannelMessage } from 'mezon-sdk';
+import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 
 @Injectable()
 export class DatabaseSeeder {
@@ -47,10 +47,7 @@ export class DatabaseSeeder {
     );
   }
 
-  createButtonClicks(
-    count = 1,
-    input: Partial<MessageButtonClicked> = {},
-  ) {
+  createButtonClicks(count = 1, input: Partial<MessageButtonClicked> = {}) {
     return Array.from({ length: count }, (_, index) =>
       messageButtonClickedFactory({
         button_id: `button-${index + 1}`,

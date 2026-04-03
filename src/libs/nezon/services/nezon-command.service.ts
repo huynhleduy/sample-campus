@@ -5,37 +5,37 @@ import {
   type CanActivate,
   type Type,
 } from '@nestjs/common';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { ModuleRef, Reflector } from '@nestjs/core';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { ChannelMessage, Events } from 'mezon-sdk';
-import type { ChannelMessageContent } from 'mezon-sdk/dist/cjs/interfaces/client';
 import { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
 import { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
 import { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
 import { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
-import { NezonClientService } from '../client/nezon-client.service';
 import { NezonExplorerService } from './nezon-explorer.service';
-import { NezonCommandDefinition } from '../interfaces/command-definition.interface';
+import { NezonClientService } from '../client/nezon-client.service';
 import { NezonCommandContext } from '../interfaces/command-context.interface';
-import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
-import type {
-  NezonModuleOptions,
-  NezonRestrictConfig,
-} from '../nezon.module-interface';
-import { ModuleRef, Reflector } from '@nestjs/core';
-import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { NezonCommandDefinition } from '../interfaces/command-definition.interface';
 import {
   NezonParamType,
   NezonParameterMetadata,
 } from '../interfaces/parameter-metadata.interface';
 import {
-  ManagedMessage,
-  DMHelper,
   ChannelHelper,
+  DMHelper,
+  ManagedMessage,
+  NormalizedSmartMessage,
   SmartMessage,
   SmartMessageLike,
-  NormalizedSmartMessage,
   cloneMentionPlaceholders,
 } from '../messaging/smart-message';
+import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
+import type {
+  NezonModuleOptions,
+  NezonRestrictConfig,
+} from '../nezon.module-interface';
+import type { ChannelMessageContent } from 'mezon-sdk/dist/cjs/interfaces/client';
 
 @Injectable()
 export class NezonCommandService {
@@ -90,7 +90,7 @@ export class NezonCommandService {
   private async bindListener() {
     const client = this.clientService.getClient();
     if (typeof (client as any).onChannelMessage === 'function') {
-      await client.onChannelMessage(async (message: ChannelMessage) => {
+      client.onChannelMessage(async (message: ChannelMessage) => {
         try {
           await this.handleMessage(message);
         } catch (error) {
@@ -226,28 +226,12 @@ export class NezonCommandService {
     const clanId = context.message.clan_id;
     const channelId = context.message.channel_id;
     const userId = context.message.sender_id;
-    if (
-      merged.clans &&
-      merged.clans.length &&
-      (!clanId || !merged.clans.includes(clanId))
-    ) {
-      return false;
-    }
-    if (
-      merged.channels &&
-      merged.channels.length &&
-      (!channelId || !merged.channels.includes(channelId))
-    ) {
-      return false;
-    }
-    if (
-      merged.users &&
-      merged.users.length &&
-      (!userId || !merged.users.includes(userId))
-    ) {
-      return false;
-    }
-    return true;
+    return !(
+      (merged.clans?.length && (!clanId || !merged.clans.includes(clanId))) ||
+      (merged.channels?.length &&
+        (!channelId || !merged.channels.includes(channelId))) ||
+      (merged.users?.length && (!userId || !merged.users.includes(userId)))
+    );
   }
 
   private mergeRestricts(
@@ -313,7 +297,7 @@ export class NezonCommandService {
         return context.args;
       case NezonParamType.ARG:
         return typeof param.data === 'number'
-          ? context.args[param.data] ?? undefined
+          ? (context.args[param.data] ?? undefined)
           : undefined;
       case NezonParamType.ATTACHMENTS: {
         const attachments = Array.isArray(context.message?.attachments)
@@ -563,7 +547,7 @@ export class NezonCommandService {
         if (!entity) {
           return undefined;
         }
-        return await entity.reply(...replyArgs);
+        return entity.reply(...replyArgs);
       },
       getChannel: () => this.getChannel(context),
       getClan: () => this.getClan(context),

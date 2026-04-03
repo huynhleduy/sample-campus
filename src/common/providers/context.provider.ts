@@ -14,7 +14,6 @@ export class ContextProvider {
   //   return store.get<T>(ContextProvider.getKeyWithNamespace(key));
   // }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static set(key: string, value: any): void {
     const store = ClsServiceManager.getClsService();
 

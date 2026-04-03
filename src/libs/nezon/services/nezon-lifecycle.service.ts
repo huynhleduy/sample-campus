@@ -4,10 +4,10 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
-import { NezonClientService } from '../client/nezon-client.service';
 import { NezonCommandService } from './nezon-command.service';
-import { NezonEventsService } from './nezon-events.service';
 import { NezonComponentService } from './nezon-component.service';
+import { NezonEventsService } from './nezon-events.service';
+import { NezonClientService } from '../client/nezon-client.service';
 
 @Injectable()
 export class NezonLifecycleService
@@ -25,7 +25,7 @@ export class NezonLifecycleService
   async onApplicationBootstrap() {
     if (process.env.NEZON_DISABLE_BOOTSTRAP === 'true') {
       this.logger.warn(
-        'Skipping Nezon bootstrap because NEZON_DISABLE_BOOTSTRAP=true',
+        'Skipping Nezon bootstrap; NEZON_DISABLE_BOOTSTRAP is enabled',
       );
       return;
     }

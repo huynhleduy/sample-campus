@@ -1,12 +1,12 @@
-import { resetMezonSdkMocks } from '../mocks/mezon-sdk';
 import {
   resetAfterAll,
   resetAfterEach,
   resetBeforeEach,
 } from './utils/lifecycle';
+import { resetMezonSdkMocks } from '../mocks/mezon-sdk';
 
-beforeEach(() => {
-  resetBeforeEach();
+beforeEach(async () => {
+  await resetBeforeEach();
   resetMezonSdkMocks();
 });
 afterEach(resetAfterEach, 20_000);

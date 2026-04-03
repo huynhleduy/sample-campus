@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { TZDate } from '@date-fns/tz';
 import { Between } from 'typeorm';
 
