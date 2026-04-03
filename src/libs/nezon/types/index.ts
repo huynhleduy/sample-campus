@@ -1,54 +1,57 @@
-import type { ChannelMessage as MezonChannelMessage } from 'mezon-sdk';
-import type { MezonClient } from 'mezon-sdk';
-import type { TokenSentEvent } from 'mezon-sdk';
-import { Events as MezonEvents } from 'mezon-sdk';
-import type { Message as MezonMessage } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
-import type { TextChannel as MezonTextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
-import type { Clan as MezonClan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
-import type { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import {
+  ChannelMessage as MezonChannelMessage,
+  Events as MezonEvents,
+  type MezonClient,
+  type TokenSentEvent,
+} from 'mezon-sdk';
+import * as ButtonModule from '../messaging/button-builder';
+import * as EmbedModule from '../messaging/embed-builder';
+import * as Messaging from '../messaging/smart-message';
+import type { ButtonComponent } from '../messaging/button-builder';
+import type { EmbedData } from '../messaging/embed-builder';
 import type {
-  MessageButtonClicked,
-  UserChannelRemoved,
-  ChannelCreatedEvent,
-  ChannelDeletedEvent,
-  ChannelUpdatedEvent,
-  RoleEvent,
-  RoleAssignedEvent,
-  AddClanUserEvent,
-  StreamingJoinedEvent,
-  StreamingLeavedEvent,
-  DropdownBoxSelected,
-  WebrtcSignalingFwd,
-  VoiceStartedEvent,
-  VoiceEndedEvent,
-  VoiceJoinedEvent,
-  VoiceLeavedEvent,
-  Notifications,
-  QuickMenuDataEvent,
-} from 'mezon-sdk/dist/cjs/rtapi/realtime';
-import type {
-  MessageReaction,
-  UserClanRemovedEvent,
-  UserChannelAddedEvent,
-  GiveCoffeeEvent,
-} from 'mezon-sdk/dist/cjs/interfaces/socket';
+  ChannelHelper as ChannelHelperType,
+  DMHelper as DMHelperType,
+  ManagedMessage as ManagedMessageType,
+  SmartMessageLike,
+} from '../messaging/smart-message';
+import type { NezonUtilsService as NezonUtilsServiceType } from '../services/nezon-utils.service';
 import type {
   StreamingJoinedEvent as ClientStreamingJoinedEvent,
   StreamingLeavedEvent as ClientStreamingLeavedEvent,
 } from 'mezon-sdk/dist/cjs/interfaces/client';
-import * as Messaging from '../messaging/smart-message';
 import type {
-  ManagedMessage as ManagedMessageType,
-  DMHelper as DMHelperType,
-  ChannelHelper as ChannelHelperType,
-  SmartMessageLike,
-} from '../messaging/smart-message';
-import * as ButtonModule from '../messaging/button-builder';
-import type { ButtonComponent } from '../messaging/button-builder';
-import * as EmbedModule from '../messaging/embed-builder';
-import type { EmbedData } from '../messaging/embed-builder';
-import type { NezonUtilsService as NezonUtilsServiceType } from '../services/nezon-utils.service';
+  GiveCoffeeEvent,
+  MessageReaction,
+  UserChannelAddedEvent,
+  UserClanRemovedEvent,
+} from 'mezon-sdk/dist/cjs/interfaces/socket';
+import type { Clan as MezonClan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
+import type { Message as MezonMessage } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
+import type { TextChannel as MezonTextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import type { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import type {
+  AddClanUserEvent,
+  ChannelCreatedEvent,
+  ChannelDeletedEvent,
+  ChannelUpdatedEvent,
+  DropdownBoxSelected,
+  MessageButtonClicked,
+  Notifications,
+  QuickMenuDataEvent,
+  RoleAssignedEvent,
+  RoleEvent,
+  StreamingJoinedEvent,
+  StreamingLeavedEvent,
+  UserChannelRemoved,
+  VoiceEndedEvent,
+  VoiceJoinedEvent,
+  VoiceLeavedEvent,
+  VoiceStartedEvent,
+  WebrtcSignalingFwd,
+} from 'mezon-sdk/dist/cjs/rtapi/realtime';
 
+/* eslint-disable @typescript-eslint/no-namespace -- ergonomic Nezon.* type surface for consumers */
 /**
  * Convenience namespace that re-exports the most common mezon-sdk types and
  * Nezon-specific helpers. Consumers can import `Nezon` alongside the decorators
@@ -92,9 +95,9 @@ export namespace Nezon {
   export type ChannelHelper = ChannelHelperType;
 
   export namespace AutoContextType {
-    export type Message = ManagedMessageType;
-    export type DM = DMHelperType;
-    export type Channel = ChannelHelperType;
+    export type AutoMessage = ManagedMessageType;
+    export type AutoDm = DMHelperType;
+    export type AutoChannel = ChannelHelperType;
   }
 
   export type Button = ButtonComponent;
@@ -132,5 +135,3 @@ export namespace Nezon {
 
   export const Events = MezonEvents;
 }
-
-export type { NezonUtilsService } from '../services/nezon-utils.service';

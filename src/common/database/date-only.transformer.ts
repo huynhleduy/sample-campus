@@ -7,7 +7,9 @@ import { ValueTransformer } from 'typeorm';
 export class DateOnlyTransformer implements ValueTransformer {
   // From database to entity
   from(value: any): string | null {
-    if (!value) return null;
+    if (!value) {
+      return null;
+    }
 
     if (value instanceof Date) {
       // Convert to UTC+7 and format as YYYY-MM-DD
@@ -25,7 +27,9 @@ export class DateOnlyTransformer implements ValueTransformer {
 
   // From entity to database
   to(value: any): string | null {
-    if (!value) return null;
+    if (!value) {
+      return null;
+    }
 
     if (typeof value === 'string') {
       // Ensure it's in YYYY-MM-DD format

@@ -1,11 +1,11 @@
 import { type Config } from 'jest';
-import BaseConfig from '../jest.config';
+import baseConfig from './jest.config.base';
 
 export default {
-  ...BaseConfig,
+  ...baseConfig,
   displayName: 'Sample Campus',
   moduleNameMapper: {
-    ...BaseConfig.moduleNameMapper,
+    ...baseConfig.moduleNameMapper,
     '^@src/(.*)$': '<rootDir>/src/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^@nezon$': '<rootDir>/src/libs/nezon/index.ts',

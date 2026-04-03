@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import type { ChannelMessage } from 'mezon-sdk';
-import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 import UserEntity from '@src/modules/user/user.entity';
 import { UserService } from '@src/modules/user/user.service';
-import { SeederService } from './seeder';
 import {
   channelMessage as channelMessageFactory,
   messageButtonClicked as messageButtonClickedFactory,
   user as userFactory,
 } from './factories';
+import { SeederService } from './seeder';
+import type { ChannelMessage } from 'mezon-sdk';
+import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 
 @Injectable()
 export class ReplService {
@@ -63,10 +63,7 @@ export class ReplService {
     return messageButtonClickedFactory(input);
   }
 
-  createButtonClicks(
-    count = 1,
-    input: Partial<MessageButtonClicked> = {},
-  ) {
+  createButtonClicks(count = 1, input: Partial<MessageButtonClicked> = {}) {
     return this.seederService.createButtonClicks(count, input);
   }
 

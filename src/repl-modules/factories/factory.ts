@@ -27,7 +27,12 @@ export class Factory {
 
         for (const item of input) {
           result.push(
-            (await format(item, cleanUp, repository, dataSource)) as Partial<Entity>,
+            (await format(
+              item,
+              cleanUp,
+              repository,
+              dataSource,
+            )) as Partial<Entity>,
           );
         }
 
@@ -52,7 +57,8 @@ export class Factory {
     }
 
     const entityFactory: EntityFactory<Entity> = async <
-      Input extends Partial<Entity> | Partial<Entity>[] | boolean | number = Partial<Entity>,
+      Input extends Partial<Entity> | Partial<Entity>[] | boolean | number =
+        Partial<Entity>,
     >(
       input: Input = {} as Input,
       cleanUp = true,
@@ -123,7 +129,8 @@ export class Factory {
 }
 
 export type EntityFactory<Entity extends ObjectLiteral> = <
-  Input extends Partial<Entity> | Partial<Entity>[] | boolean | number = Partial<Entity>,
+  Input extends Partial<Entity> | Partial<Entity>[] | boolean | number =
+    Partial<Entity>,
 >(
   input?: Input,
   cleanUp?: boolean,

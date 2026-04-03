@@ -21,7 +21,7 @@ release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
 release_branch="$(printf '%s' "${active_pr}" | jq -r '.headRefName')"
 
 git fetch origin "${release_branch}" --prune
-queued_pr_numbers="$(list_release_branch_pr_numbers "${release_branch}" || true)"
+queued_pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}" || true)"
 
 sync_release_pr_body "${release_number}" "${release_branch}"
 gh pr merge "${release_number}" --merge --delete-branch

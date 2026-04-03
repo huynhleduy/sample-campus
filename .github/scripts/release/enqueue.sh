@@ -27,24 +27,19 @@ if [ -z "${merged_at}" ]; then
   exit 0
 fi
 
-if [ -z "${merge_sha}" ]; then
-  echo "PR #${PR_NUMBER} has no merge commit SHA. Manual intervention is required."
-  exit 1
-fi
-
 if pr_has_label "${PR_NUMBER}" "${RELEASE_HOLD_LABEL}" && [ "${FORCE_ENQUEUE:-false}" != "true" ]; then
   echo "PR #${PR_NUMBER} is on hold. Skipping auto-enqueue."
   exit 0
 fi
 
-active_pr="$(ensure_active_release_pr)"
-release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
-release_branch="$(printf '%s' "${active_pr}" | jq -r '.headRefName')"
+release_branch="$(ensure_active_release_branch)"
 
 git fetch origin "${release_branch}" --prune
 
 if git log "origin/${release_branch}" --grep="Release-Queue-PR: ${PR_NUMBER}" --format='%H' -n 1 | grep -q .; then
   echo "PR #${PR_NUMBER} is already queued."
+  active_pr="$(ensure_active_release_pr_for_branch "${release_branch}")"
+  release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
   add_label_if_missing "${PR_NUMBER}" "${RELEASE_QUEUE_LABEL}"
   remove_label_if_present "${PR_NUMBER}" "${RELEASE_EXCLUDED_LABEL}"
   sync_release_pr_body "${release_number}" "${release_branch}"
@@ -53,12 +48,19 @@ fi
 
 git checkout -B "${release_branch}" "origin/${release_branch}"
 
-parent_count="$(git cat-file -p "${merge_sha}" | grep -c '^parent ' || true)"
+if [ -n "${merge_sha}" ]; then
+  parent_count="$(git cat-file -p "${merge_sha}" | grep -c '^parent ' || true)"
 
-if [ "${parent_count}" -gt 1 ]; then
-  git cherry-pick -m 1 -x "${merge_sha}"
+  if [ "${parent_count}" -gt 1 ]; then
+    git cherry-pick -m 1 -x "${merge_sha}"
+  else
+    git cherry-pick -x "${merge_sha}"
+  fi
 else
-  git cherry-pick -x "${merge_sha}"
+  while IFS= read -r commit_sha; do
+    [ -n "${commit_sha}" ] || continue
+    git cherry-pick -x "${commit_sha}"
+  done <<< "$(list_pr_commit_shas "${PR_NUMBER}")"
 fi
 
 latest_message="$(git log -1 --pretty=%B)"
@@ -68,6 +70,9 @@ Release-Queue-PR: ${PR_NUMBER}
 Release-Source-PR: $(printf '%s' "${pr_json}" | jq -r '.url')"
 
 git push origin "HEAD:${release_branch}"
+
+active_pr="$(ensure_active_release_pr_for_branch "${release_branch}")"
+release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
 
 add_label_if_missing "${PR_NUMBER}" "${RELEASE_QUEUE_LABEL}"
 remove_label_if_present "${PR_NUMBER}" "${RELEASE_EXCLUDED_LABEL}"
