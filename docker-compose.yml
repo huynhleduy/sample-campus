@@ -1,0 +1,51 @@
+services:
+  sample-campus-postgres:
+    container_name: sample-campus-postgres
+    image: postgres:15.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sample-campus
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+    volumes:
+      - sample-campus-postgres-data:/data/postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sample-campus"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - sample-campus-backend
+
+  sample-campus:
+    container_name: sample-campus
+    image: sample-campus
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: sample-campus-postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: sample-campus
+      NEZON_DISABLE_BOOTSTRAP: "true"
+    depends_on:
+      sample-campus-postgres:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    networks:
+      - sample-campus-backend
+
+networks:
+  sample-campus-backend:
+
+volumes:
+  sample-campus-postgres-data:

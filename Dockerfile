@@ -1,27 +1,64 @@
+ARG NODE_VERSION=22.17.0
 
-FROM node:20-alpine As production
+FROM node:${NODE_VERSION}-alpine AS base
 
-RUN apk add \
-   chromium \
-   nss \
-   freetype \
-   harfbuzz \
-   ca-certificates \
-   ttf-freefont 
+ENV REDISMS_DISABLE_POSTINSTALL=1
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
 
-RUN mkdir ./dist
-RUN mkdir ./template
+WORKDIR /app
 
-COPY --chown=node:node /package.json ./package.json
-COPY --chown=node:node /yarn.lock ./yarn.lock
-COPY --chown=node:node /dist ./dist
-COPY --chown=node:node /template ./template
+RUN apk --no-cache add \
+  g++ \
+  make \
+  py3-pip \
+  curl \
+  gcc \
+  python3 \
+  linux-headers \
+  binutils-gold \
+  gnupg \
+  libstdc++ \
+  nss
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV NODE_ENV production
-RUN yarn install --production
+FROM base AS deps
 
-EXPOSE 3000
-ENV PORT 3000
-# Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+COPY package.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile --ignore-engines
+
+FROM deps AS build
+
+COPY . .
+
+RUN yarn build:docker
+
+FROM deps AS prod-deps
+
+RUN yarn install --frozen-lockfile --ignore-engines --production=true --ignore-optional --prefer-offline
+
+FROM node:${NODE_VERSION}-alpine AS production
+
+ARG APP_VERSION=0.0.0
+
+RUN apk --no-cache add tini nss
+
+ENV NODE_ENV=production
+ENV PORT=4000
+ENV APP_VERSION=${APP_VERSION}
+
+WORKDIR /app
+
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist ./dist
+COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --from=build --chown=node:node /app/yarn.lock ./yarn.lock
+
+RUN mkdir -p /app/mezon-cache && chown -R node:node /app
+
+USER node
+
+EXPOSE 4000
+
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["sh", "-c", "yarn migrate:prod && yarn start:prod"]

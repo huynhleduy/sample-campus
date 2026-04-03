@@ -11,14 +11,13 @@ import { DatabaseSeeder } from './database.seeder';
     SharedModule,
     TypeOrmModule.forRootAsync({
       imports: [SharedModule],
-      useFactory: (configService: AppConfigService) =>
-        configService.postgreSeedConfig,
+      useFactory: (configService: AppConfigService) => configService.postgresConfig,
       inject: [AppConfigService],
     }),
     TypeOrmModule.forFeature(entities),
     EventEmitterModule.forRoot(),
   ],
-  providers: [],
+  providers: [DatabaseSeeder],
   exports: [DatabaseSeeder],
 })
 export class SeederModule {}

@@ -1,17 +1,17 @@
 import { AbstractAuditEntity } from '@src/common/database/abstract.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('users')
 export default class UserEntity extends AbstractAuditEntity {
-  @Column({ primary: true, unique: true })
+  @PrimaryColumn('varchar')
   mezonId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   name?: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   email?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   avatar?: string;
 }

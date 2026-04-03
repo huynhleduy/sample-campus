@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
@@ -12,6 +13,8 @@ import { NezonComponentService } from './nezon-component.service';
 export class NezonLifecycleService
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
+  private readonly logger = new Logger(NezonLifecycleService.name);
+
   constructor(
     private readonly clientService: NezonClientService,
     private readonly commandService: NezonCommandService,
@@ -20,6 +23,13 @@ export class NezonLifecycleService
   ) {}
 
   async onApplicationBootstrap() {
+    if (process.env.NEZON_DISABLE_BOOTSTRAP === 'true') {
+      this.logger.warn(
+        'Skipping Nezon bootstrap because NEZON_DISABLE_BOOTSTRAP=true',
+      );
+      return;
+    }
+
     await this.clientService.login();
     this.eventsService.initialize();
     await this.commandService.initialize();
@@ -32,4 +42,3 @@ export class NezonLifecycleService
     await this.clientService.disconnect();
   }
 }
-

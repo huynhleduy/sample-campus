@@ -82,7 +82,7 @@ export class AppConfigService {
       database: this.getString('DB_DATABASE'),
       namingStrategy: new SnakeNamingStrategy(),
       subscribers: [],
-      synchronize: false,
+      synchronize: this.isTest,
       entities,
     };
   }
@@ -98,7 +98,7 @@ export class AppConfigService {
       password: this.getString('DB_PASSWORD'),
       database: this.getString('DB_DATABASE'),
       namingStrategy: new SnakeNamingStrategy(),
-      synchronize: false,
+      synchronize: this.isTest,
       entities,
     };
   }

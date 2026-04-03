@@ -1,29 +1,37 @@
 {
-   "name": "api",
-   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-   "sourceRoot": "apps/be/src",
+   "name": "sample-campus",
+   "$schema": "../node_modules/nx/schemas/project-schema.json",
+   "root": "sample-campus",
+   "sourceRoot": "sample-campus/src",
    "projectType": "application",
    "tags": [],
    "targets": {
       "dev": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run dev",
-            "cwd": "apps/be"
+            "command": "yarn dev",
+            "cwd": "sample-campus"
+         }
+      },
+      "start:repl": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "yarn start:repl",
+            "cwd": "sample-campus"
          }
       },
       "dev:bot": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run dev:bot",
-            "cwd": "apps/be"
+            "command": "yarn dev:bot",
+            "cwd": "sample-campus"
          }
       },
       "build": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run build",
-            "cwd": "apps/be"
+            "command": "yarn build",
+            "cwd": "sample-campus"
          },
          "outputs": [
             "{projectRoot}/dist"
@@ -32,8 +40,8 @@
       "start": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run start",
-            "cwd": "apps/be"
+            "command": "yarn start",
+            "cwd": "sample-campus"
          },
          "dependsOn": [
             "build"
@@ -42,22 +50,50 @@
       "lint": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run lint",
-            "cwd": "apps/be"
+            "command": "yarn lint",
+            "cwd": "sample-campus"
+         }
+      },
+      "test": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "yarn test --runInBand",
+            "cwd": "sample-campus"
          }
       },
       "migration:generate": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run migration:generate",
-            "cwd": "apps/be"
+            "command": "yarn migration:generate",
+            "cwd": "sample-campus"
+         }
+      },
+      "migration:create": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "yarn migration:create",
+            "cwd": "sample-campus"
          }
       },
       "migrate": {
          "executor": "nx:run-commands",
          "options": {
-            "command": "npm run migrate",
-            "cwd": "apps/be"
+            "command": "yarn migrate",
+            "cwd": "sample-campus"
+         }
+      },
+      "migrate:rollback": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "yarn migrate:rollback",
+            "cwd": "sample-campus"
+         }
+      },
+      "migrate:fresh": {
+         "executor": "nx:run-commands",
+         "options": {
+            "command": "yarn migrate:fresh",
+            "cwd": "sample-campus"
          }
       }
    }
