@@ -56,11 +56,14 @@ if pr_has_label "${PR_NUMBER}" "${RELEASE_HOLD_LABEL}" && [ "${FORCE_ENQUEUE:-fa
   exit 0
 fi
 
-release_branch="$(ensure_active_release_branch)"
+release_branch="$(resolve_release_branch_name)"
 
-git fetch origin "${release_branch}" --prune
+if remote_release_branch_exists "${release_branch}"; then
+  git fetch origin "${release_branch}" --prune
+fi
 
-if git log "origin/${release_branch}" --grep="Release-Queue-PR: ${PR_NUMBER}" --format='%H' -n 1 | grep -q .; then
+if remote_release_branch_exists "${release_branch}" \
+  && git log "origin/${release_branch}" --grep="Release-Queue-PR: ${PR_NUMBER}" --format='%H' -n 1 | grep -q .; then
   echo "PR #${PR_NUMBER} is already queued."
   active_pr="$(ensure_active_release_pr_for_branch "${release_branch}")"
   release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
@@ -70,18 +73,25 @@ if git log "origin/${release_branch}" --grep="Release-Queue-PR: ${PR_NUMBER}" --
   exit 0
 fi
 
-blocking_prs="$(list_blocking_merged_prs_before_pr "${release_branch}" "${PR_NUMBER}" || true)"
+# The release queue is FIFO by merge order. This intentionally prefers
+# deterministic release branches over opportunistic out-of-order cherry-picks.
+blocking_prs="$(list_blocking_merged_prs_before_pr "${release_branch}" "${PR_NUMBER}" "${merged_at}")"
 
 if [ -n "${blocking_prs}" ]; then
   first_blocker="$(printf '%s\n' "${blocking_prs}" | head -n 1)"
-  blocker_numbers="$(printf '%s\n' "${blocking_prs}" | jq -sr 'map(.number | tostring) | join(", ")')"
-  blocker_summary="$(printf '%s' "${first_blocker}" | jq -r '"#" + (.number | tostring) + " " + .title')"
+  first_blocker_number="$(printf '%s' "${first_blocker}" | cut -f1)"
+  first_blocker_title="$(printf '%s' "${first_blocker}" | cut -f2-)"
+  blocker_numbers="$(printf '%s\n' "${blocking_prs}" | cut -f1 | paste -sd ',' - | sed 's/,/, /g')"
+  blocker_summary="#${first_blocker_number} ${first_blocker_title}"
 
   echo "PR #${PR_NUMBER} cannot be enqueued onto ${release_branch} yet." >&2
   echo "Earlier merged PRs are still missing from the release branch: ${blocker_numbers}" >&2
   echo "Queue the earliest missing PR first: ${blocker_summary}" >&2
   exit 1
 fi
+
+release_branch="$(ensure_active_release_branch)"
+git fetch origin "${release_branch}" --prune
 
 git checkout -B "${release_branch}" "origin/${release_branch}"
 

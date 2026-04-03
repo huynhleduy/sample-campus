@@ -86,7 +86,13 @@ get_existing_release_branch_for_date() {
     | tail -n 1
 }
 
-ensure_active_release_branch() {
+remote_release_branch_exists() {
+  local branch_name="$1"
+
+  git ls-remote --exit-code --heads origin "refs/heads/${branch_name}" >/dev/null 2>&1
+}
+
+resolve_release_branch_name() {
   local active_pr date branch_name sequence next_sequence
 
   active_pr="$(get_active_release_pr)"
@@ -107,6 +113,18 @@ ensure_active_release_branch() {
   sequence="$(get_release_sequence "${date}")"
   next_sequence="$((sequence + 1))"
   branch_name="${RELEASE_BRANCH_PREFIX}/${date}-${next_sequence}"
+
+  printf '%s\n' "${branch_name}"
+}
+
+ensure_active_release_branch() {
+  local branch_name
+  branch_name="$(resolve_release_branch_name)"
+
+  if remote_release_branch_exists "${branch_name}"; then
+    printf '%s\n' "${branch_name}"
+    return 0
+  fi
 
   git fetch origin "${RELEASE_TARGET_BRANCH}" --prune >&2
   git checkout -B "${branch_name}" "origin/${RELEASE_TARGET_BRANCH}" >&2
@@ -135,11 +153,36 @@ list_prs_by_label() {
 }
 
 list_merged_source_prs() {
-  gh pr list \
-    --base "${RELEASE_SOURCE_BRANCH}" \
-    --state merged \
-    --limit 200 \
-    --json number,title,url,mergedAt,labels
+  local repo
+  repo="$(repo_name_with_owner)"
+
+  gh api --paginate "repos/${repo}/pulls?state=closed&base=${RELEASE_SOURCE_BRANCH}&per_page=100" \
+    | jq -s '
+        add
+        | map(select(.merged_at != null))
+        | map({
+            number,
+            title,
+            url: .html_url,
+            mergedAt: .merged_at,
+            labels: (.labels // [])
+          })
+      '
+}
+
+list_merged_source_pr_rows() {
+  list_merged_source_prs \
+    | jq -r '
+        sort_by(.mergedAt)
+        | .[]
+        | [
+            (.number | tostring),
+            .mergedAt,
+            (.title | gsub("[\t\r\n]+"; " ")),
+            ((.labels // []) | map(.name) | join(","))
+          ]
+        | @tsv
+      '
 }
 
 release_branch_has_diff() {
@@ -151,6 +194,10 @@ release_branch_has_diff() {
 
 list_current_release_branch_pr_numbers() {
   local release_branch="$1"
+
+  if ! remote_release_branch_exists "${release_branch}"; then
+    return 0
+  fi
 
   git log --reverse "origin/${release_branch}" \
     --format='%B%n<<END>>' \
@@ -197,31 +244,43 @@ list_release_branch_pr_entries() {
 list_blocking_merged_prs_before_pr() {
   local release_branch="$1"
   local current_pr_number="$2"
-  local queued_pr_numbers merged_prs_json
+  local current_pr_merged_at="$3"
+  local queued_pr_numbers pr_number pr_merged_at pr_title pr_labels
+  declare -A queued_pr_map=()
 
-  queued_pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}" || true)"
-  merged_prs_json="$(list_merged_source_prs)"
+  queued_pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}")"
 
-  printf '%s' "${merged_prs_json}" | jq -c \
-    --argjson current_pr_number "${current_pr_number}" \
-    --arg queued_pr_numbers "${queued_pr_numbers}" \
-    --arg excluded_label "${RELEASE_EXCLUDED_LABEL}" \
-    --arg hold_label "${RELEASE_HOLD_LABEL}" '
-      ($queued_pr_numbers | split("\n") | map(select(length > 0) | tonumber)) as $queued
-      | sort_by(.mergedAt) as $prs
-      | ($prs | map(.number) | index($current_pr_number)) as $current_index
-      | if $current_index == null then
-          empty
-        else
-          $prs[:$current_index]
-          | map(select(
-              (($queued | index(.number)) == null)
-              and ((.labels | map(.name) | index($excluded_label)) == null)
-              and ((.labels | map(.name) | index($hold_label)) == null)
-            ))
-          | .[]
-        end
-    '
+  while IFS= read -r queued_pr_number; do
+    [ -n "${queued_pr_number}" ] || continue
+    queued_pr_map["${queued_pr_number}"]=1
+  done <<< "${queued_pr_numbers}"
+
+  while IFS=$'\t' read -r pr_number pr_merged_at pr_title pr_labels; do
+    [ -n "${pr_number}" ] || continue
+
+    if [ "${pr_number}" = "${current_pr_number}" ]; then
+      continue
+    fi
+
+    if ! {
+      [ "${pr_merged_at}" \< "${current_pr_merged_at}" ] \
+        || { [ "${pr_merged_at}" = "${current_pr_merged_at}" ] && [ "${pr_number}" -lt "${current_pr_number}" ]; }
+    }; then
+      continue
+    fi
+
+    if [ -n "${queued_pr_map[${pr_number}]:-}" ]; then
+      continue
+    fi
+
+    case ",${pr_labels}," in
+      *",${RELEASE_REVERTED_LABEL},"*)
+        continue
+        ;;
+    esac
+
+    printf '%s\t%s\n' "${pr_number}" "${pr_title}"
+  done < <(list_merged_source_pr_rows)
 }
 
 render_release_body() {
