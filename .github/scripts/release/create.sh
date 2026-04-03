@@ -10,11 +10,15 @@ require_gh_auth
 configure_git
 ensure_release_labels
 
-active_pr="$(ensure_active_release_pr)"
-release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
-release_branch="$(printf '%s' "${active_pr}" | jq -r '.headRefName')"
+release_branch="$(ensure_active_release_branch)"
+active_pr="$(ensure_active_release_pr_for_branch "${release_branch}" || true)"
 
-sync_release_pr_body "${release_number}" "${release_branch}"
+if [ -n "${active_pr}" ]; then
+  release_number="$(printf '%s' "${active_pr}" | jq -r '.number')"
+  sync_release_pr_body "${release_number}" "${release_branch}"
+else
+  release_number=""
+fi
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   echo "release_pr_number=${release_number}" >> "${GITHUB_OUTPUT}"
