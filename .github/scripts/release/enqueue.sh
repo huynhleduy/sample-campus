@@ -8,6 +8,30 @@ source "${SCRIPT_DIR}/common.sh"
 
 : "${PR_NUMBER:?PR_NUMBER is required}"
 
+cleanup_cherry_pick() {
+  if git rev-parse -q --verify CHERRY_PICK_HEAD >/dev/null 2>&1; then
+    git cherry-pick --abort || true
+  fi
+}
+
+trap cleanup_cherry_pick EXIT
+
+cherry_pick_or_fail() {
+  local commit_sha="$1"
+  local extra_args=("${@:2}")
+
+  if git cherry-pick "${extra_args[@]}" -x "${commit_sha}"; then
+    return 0
+  fi
+
+  cleanup_cherry_pick
+
+  echo "Failed to enqueue PR #${PR_NUMBER} onto ${release_branch}: cherry-pick conflict at commit ${commit_sha}." >&2
+  echo "This usually means the PR depends on earlier changes from ${RELEASE_SOURCE_BRANCH} that are not queued on ${release_branch} yet." >&2
+  echo "Queue the missing earlier PR(s) first, then rerun Release Enqueue for PR #${PR_NUMBER}." >&2
+  exit 1
+}
+
 require_gh_auth
 configure_git
 ensure_release_labels
@@ -46,20 +70,33 @@ if git log "origin/${release_branch}" --grep="Release-Queue-PR: ${PR_NUMBER}" --
   exit 0
 fi
 
+blocking_prs="$(list_blocking_merged_prs_before_pr "${release_branch}" "${PR_NUMBER}" || true)"
+
+if [ -n "${blocking_prs}" ]; then
+  first_blocker="$(printf '%s\n' "${blocking_prs}" | head -n 1)"
+  blocker_numbers="$(printf '%s\n' "${blocking_prs}" | jq -sr 'map(.number | tostring) | join(", ")')"
+  blocker_summary="$(printf '%s' "${first_blocker}" | jq -r '"#" + (.number | tostring) + " " + .title')"
+
+  echo "PR #${PR_NUMBER} cannot be enqueued onto ${release_branch} yet." >&2
+  echo "Earlier merged PRs are still missing from the release branch: ${blocker_numbers}" >&2
+  echo "Queue the earliest missing PR first: ${blocker_summary}" >&2
+  exit 1
+fi
+
 git checkout -B "${release_branch}" "origin/${release_branch}"
 
 if [ -n "${merge_sha}" ]; then
   parent_count="$(git cat-file -p "${merge_sha}" | grep -c '^parent ' || true)"
 
   if [ "${parent_count}" -gt 1 ]; then
-    git cherry-pick -m 1 -x "${merge_sha}"
+    cherry_pick_or_fail "${merge_sha}" -m 1
   else
-    git cherry-pick -x "${merge_sha}"
+    cherry_pick_or_fail "${merge_sha}"
   fi
 else
   while IFS= read -r commit_sha; do
     [ -n "${commit_sha}" ] || continue
-    git cherry-pick -x "${commit_sha}"
+    cherry_pick_or_fail "${commit_sha}"
   done <<< "$(list_pr_commit_shas "${PR_NUMBER}")"
 fi
 
