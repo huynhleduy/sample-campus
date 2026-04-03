@@ -1,0 +1,31 @@
+name: Setup Sample Campus
+description: Install Node and project dependencies for sample-campus.
+
+inputs:
+  node-version:
+    description: Node.js version used by sample-campus.
+    required: false
+    default: "22"
+  working-directory:
+    description: Project directory.
+    required: false
+    default: .
+  install-args:
+    description: Additional yarn install arguments.
+    required: false
+    default: --frozen-lockfile --ignore-engines
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: yarn
+        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: yarn install ${{ inputs.install-args }}

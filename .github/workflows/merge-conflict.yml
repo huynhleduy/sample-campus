@@ -1,0 +1,20 @@
+name: Merge Conflict Label
+
+on:
+  push:
+  pull_request_target:
+    types:
+      - synchronize
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label-conflict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label merge conflicts
+        uses: eps1lon/actions-label-merge-conflict@releases/2.x
+        with:
+          dirtyLabel: "PR: Conflict"
+          repoToken: ${{ secrets.GITHUB_TOKEN }}

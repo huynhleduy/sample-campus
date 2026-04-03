@@ -1,0 +1,65 @@
+name: Build Sample Campus Image
+description: Build and optionally publish the sample-campus container image.
+
+inputs:
+  image:
+    description: Fully qualified image name.
+    required: true
+  context:
+    description: Docker build context.
+    required: false
+    default: .
+  dockerfile:
+    description: Dockerfile path.
+    required: false
+    default: ./Dockerfile
+  push:
+    description: Whether to push the image.
+    required: false
+    default: "false"
+  tags:
+    description: Extra newline-separated tags.
+    required: false
+    default: ""
+
+outputs:
+  image-ref:
+    description: Primary image reference.
+    value: ${{ steps.meta.outputs.primary-tag }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Collect tags
+      id: meta
+      shell: bash
+      env:
+        INPUT_IMAGE: ${{ inputs.image }}
+        INPUT_TAGS: ${{ inputs.tags }}
+        GIT_SHA: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+
+        primary_tag="${INPUT_IMAGE}:${GIT_SHA}"
+        {
+          echo "primary-tag=${primary_tag}"
+          echo "tags<<EOF"
+          echo "${primary_tag}"
+          if [ -n "${INPUT_TAGS}" ]; then
+            printf '%s\n' "${INPUT_TAGS}"
+          fi
+          echo "EOF"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Build image
+      uses: docker/build-push-action@v6
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        push: ${{ inputs.push }}
+        tags: ${{ steps.meta.outputs.tags }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

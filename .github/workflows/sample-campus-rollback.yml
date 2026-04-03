@@ -1,0 +1,48 @@
+name: Sample Campus Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment name.
+        required: true
+        default: production
+        type: choice
+        options:
+          - staging
+          - production
+      rollback_target:
+        description: Image reference, deployment version, or adapter-specific identifier to roll back to.
+        required: true
+        type: string
+      reason:
+        description: Why the rollback is being triggered.
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: sample-campus-rollback-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  ROLLBACK_ADAPTER_PATH: .github/scripts/rollback-sample-campus.sh
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run rollback adapter
+        uses: ./.github/actions/run-rollback-adapter
+        with:
+          script-path: ${{ env.ROLLBACK_ADAPTER_PATH }}
+          rollback-target: ${{ inputs.rollback_target }}
+          environment-name: ${{ inputs.environment }}
+          reason: ${{ inputs.reason }}
