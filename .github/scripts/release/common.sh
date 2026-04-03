@@ -274,7 +274,7 @@ list_blocking_merged_prs_before_pr() {
     fi
 
     case ",${pr_labels}," in
-      *",${RELEASE_REVERTED_LABEL},"*)
+      *",${RELEASE_REVERTED_LABEL},"*|*",${RELEASE_EXCLUDED_LABEL},"*)
         continue
         ;;
     esac
