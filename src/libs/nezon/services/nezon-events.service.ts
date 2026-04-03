@@ -9,13 +9,8 @@ import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { ChannelMessage, ChannelMessageContent } from 'mezon-sdk';
-import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
-import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
-import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
-import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import { NezonExplorerService } from './nezon-explorer.service';
 import { NezonClientService } from '../client/nezon-client.service';
-import type { NezonCommandContext } from '../interfaces/command-context.interface';
 import { NezonEventDefinition } from '../interfaces/event-definition.interface';
 import {
   NezonParamType,
@@ -31,11 +26,16 @@ import {
   type SmartMessageLike,
 } from '../messaging/smart-message';
 import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
+import type { NezonCommandContext } from '../interfaces/command-context.interface';
 import type {
   NezonModuleOptions,
   NezonRestrictConfig,
 } from '../nezon.module-interface';
-import { NezonExplorerService } from './nezon-explorer.service';
+import type { ChannelMessage, ChannelMessageContent } from 'mezon-sdk';
+import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
+import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
+import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 
 interface BoundEventHandler {
   event: string;

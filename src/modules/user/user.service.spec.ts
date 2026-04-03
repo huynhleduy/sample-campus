@@ -1,6 +1,6 @@
-import type UserEntity from '@src/modules/user/user.entity';
-import { UserService } from '@src/modules/user/user.service';
 import { createTestingModule, factory, testingModule } from '#jest';
+import { UserService } from '@src/modules/user/user.service';
+import type UserEntity from '@src/modules/user/user.entity';
 
 describe(UserService.name, () => {
   beforeAll(createTestingModule);

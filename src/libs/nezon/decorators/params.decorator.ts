@@ -1,15 +1,15 @@
 import { Inject } from '@nestjs/common';
 import {
-  type ChannelMessage,
   MezonClient as MezonClientClass,
+  type ChannelMessage,
 } from 'mezon-sdk';
-import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
-import type { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
-import 'reflect-metadata';
 import {
   NezonParamType,
   NezonParameterMetadata,
 } from '../interfaces/parameter-metadata.interface';
+import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import type { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import 'reflect-metadata';
 
 export const NEZON_PARAMS_METADATA = 'nezon:params';
 

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { ChannelMessage } from 'mezon-sdk';
-import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 import UserEntity from '@src/modules/user/user.entity';
 import { DatabaseSeeder } from '@src/seeders/database.seeder';
+import type { ChannelMessage } from 'mezon-sdk';
+import type { MessageButtonClicked } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 
 @Injectable()
 export class SeederService {

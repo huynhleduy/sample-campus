@@ -1,22 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MezonClient, ChannelMessage } from 'mezon-sdk';
+import { ChannelMessage, MezonClient } from 'mezon-sdk';
 import {
-  type ChannelMessageContent,
   type ApiMessageAttachment,
+  type ChannelMessageContent,
 } from 'mezon-sdk/dist/cjs/interfaces/client';
-import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
-import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
-import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
-import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 import { NezonClientService } from '../client/nezon-client.service';
 import {
   ManagedMessage,
   SmartMessage,
-  type SmartMessageLike,
-  type NormalizedSmartMessage,
   cloneMentionPlaceholders,
+  type NormalizedSmartMessage,
+  type SmartMessageLike,
 } from '../messaging/smart-message';
 import type { NezonCommandContext } from '../interfaces/command-context.interface';
+import type { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
+import type { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
+import type { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import type { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 
 @Injectable()
 export class NezonUtilsService {

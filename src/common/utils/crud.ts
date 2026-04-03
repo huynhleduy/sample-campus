@@ -1,11 +1,11 @@
 import {
+  CrudConfigService,
   CrudController,
   CrudRequest,
-  type QueryOptions,
-  CrudConfigService,
   CrudRequestInterceptor,
   Override,
   ParsedRequest,
+  type QueryOptions,
 } from '@nestjsx/crud';
 import {
   ComparisonOperator,

@@ -8,13 +8,13 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ChannelMessage, Events, MezonClient, TokenSentEvent } from 'mezon-sdk';
 import {
-  MessageButtonClicked,
   AddClanUserEvent,
+  MessageButtonClicked,
 } from 'mezon-sdk/dist/cjs/rtapi/realtime';
 import { NezonClientService } from '../client/nezon-client.service';
+import { NEZON_MENTION_EVENT } from '../decorators/on.decorator';
 import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
 import type { NezonModuleOptions } from '../nezon.module-interface';
-import { NEZON_MENTION_EVENT } from '../decorators/on.decorator';
 
 type EventHandler = (...args: unknown[]) => void;
 

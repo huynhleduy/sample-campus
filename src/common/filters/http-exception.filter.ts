@@ -29,19 +29,17 @@ export class HttpExceptionFilter {
       const exceptionResponse = exception.getResponse();
       if (exception instanceof BadRequestException && exceptionResponse) {
         const validationErrors =
-          // eslint-disable-next-line dot-notation
           exceptionResponse?.['message'] || exceptionResponse;
         if (Array.isArray(validationErrors)) {
           responseMessage = validationErrors.map((error) => ({
             field: error.property,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             errors: Object.values(error.constraints),
           })) as IValidationError[];
         } else {
           responseMessage = exceptionResponse;
         }
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         responseMessage = exceptionResponse;
       }
 
@@ -51,7 +49,7 @@ export class HttpExceptionFilter {
       //     ? [exception?.getResponse()]
       //     : errors;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     const resBody: IResponse<null> = {
       statusCode: status,
       data: null,
@@ -59,7 +57,7 @@ export class HttpExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
     };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     return response.status(status).json(resBody);
   }
 

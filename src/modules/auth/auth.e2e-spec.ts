@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { http, createTestingApp, testingModule } from '#jest';
+import { createTestingApp, http, testingModule } from '#jest';
 
 describe('AuthController (e2e)', () => {
   beforeAll(createTestingApp);

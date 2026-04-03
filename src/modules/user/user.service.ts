@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CRUDService } from '@src/common/utils/crud';
 import { isEmpty } from 'lodash';
 import { In, Repository } from 'typeorm';
+import { CRUDService } from '@src/common/utils/crud';
 import UserEntity from './user.entity';
 
 type UpsertUserMeta = {

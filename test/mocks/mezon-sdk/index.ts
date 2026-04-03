@@ -120,5 +120,5 @@ function resetMezonSdkMocks() {
   mezonMockState.clients.length = 0;
 }
 
-export { mezonSdkMethodMocks, mezonMockState, resetMezonSdkMocks };
+export { mezonMockState, mezonSdkMethodMocks, resetMezonSdkMocks };
 export { Clan, Message, TextChannel, User };

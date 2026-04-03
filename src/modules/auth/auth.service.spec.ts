@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { AuthService } from '@src/modules/auth/auth.service';
 import {
   createTestingModule,
   mockFetchJsonOnce,
   mockedFetch,
   testingModule,
 } from '#jest';
+import { AuthService } from '@src/modules/auth/auth.service';
 
 describe(AuthService.name, () => {
   beforeAll(createTestingModule);

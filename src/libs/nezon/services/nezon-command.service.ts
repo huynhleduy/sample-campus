@@ -5,37 +5,37 @@ import {
   type CanActivate,
   type Type,
 } from '@nestjs/common';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { ModuleRef, Reflector } from '@nestjs/core';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { ChannelMessage, Events } from 'mezon-sdk';
-import type { ChannelMessageContent } from 'mezon-sdk/dist/cjs/interfaces/client';
 import { Clan } from 'mezon-sdk/dist/cjs/mezon-client/structures/Clan';
 import { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
 import { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
 import { User } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
-import { NezonClientService } from '../client/nezon-client.service';
 import { NezonExplorerService } from './nezon-explorer.service';
-import { NezonCommandDefinition } from '../interfaces/command-definition.interface';
+import { NezonClientService } from '../client/nezon-client.service';
 import { NezonCommandContext } from '../interfaces/command-context.interface';
-import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
-import type {
-  NezonModuleOptions,
-  NezonRestrictConfig,
-} from '../nezon.module-interface';
-import { ModuleRef, Reflector } from '@nestjs/core';
-import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { NezonCommandDefinition } from '../interfaces/command-definition.interface';
 import {
   NezonParamType,
   NezonParameterMetadata,
 } from '../interfaces/parameter-metadata.interface';
 import {
-  ManagedMessage,
-  DMHelper,
   ChannelHelper,
+  DMHelper,
+  ManagedMessage,
+  NormalizedSmartMessage,
   SmartMessage,
   SmartMessageLike,
-  NormalizedSmartMessage,
   cloneMentionPlaceholders,
 } from '../messaging/smart-message';
+import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
+import type {
+  NezonModuleOptions,
+  NezonRestrictConfig,
+} from '../nezon.module-interface';
+import type { ChannelMessageContent } from 'mezon-sdk/dist/cjs/interfaces/client';
 
 @Injectable()
 export class NezonCommandService {
