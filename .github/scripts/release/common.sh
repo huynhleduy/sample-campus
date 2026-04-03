@@ -188,7 +188,7 @@ list_merged_source_pr_rows() {
 release_branch_has_diff() {
   local branch_name="$1"
 
-  git fetch origin "${RELEASE_TARGET_BRANCH}" "${branch_name}" --prune
+  git fetch origin "${RELEASE_TARGET_BRANCH}" "${branch_name}" --prune >&2
   [ "$(git rev-list --count "origin/${RELEASE_TARGET_BRANCH}..origin/${branch_name}")" -gt 0 ]
 }
 
@@ -338,11 +338,15 @@ ensure_active_release_pr_for_branch() {
   render_release_body "${branch_name}" > "${body_file}"
   local title pr_url pr_number
   title="Release-$(release_date)_$(printf '%s' "${branch_name}" | awk -F- '{print $NF}')"
-  pr_url="$(gh pr create \
+  if ! pr_url="$(gh pr create \
     --base "${RELEASE_TARGET_BRANCH}" \
     --head "${branch_name}" \
     --title "${title}" \
-    --body-file "${body_file}")"
+    --body-file "${body_file}")"; then
+    rm -f "${body_file}"
+    echo "Failed to create release PR for ${branch_name}. Ensure GitHub Actions is allowed to create pull requests for this repository." >&2
+    return 1
+  fi
   rm -f "${body_file}"
 
   pr_number="$(gh pr view "${pr_url}" --json number --jq '.number')"
