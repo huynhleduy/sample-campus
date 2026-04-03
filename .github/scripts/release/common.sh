@@ -108,9 +108,9 @@ ensure_active_release_branch() {
   next_sequence="$((sequence + 1))"
   branch_name="${RELEASE_BRANCH_PREFIX}/${date}-${next_sequence}"
 
-  git fetch origin "${RELEASE_TARGET_BRANCH}" --prune
-  git checkout -B "${branch_name}" "origin/${RELEASE_TARGET_BRANCH}"
-  git push --set-upstream origin "${branch_name}"
+  git fetch origin "${RELEASE_TARGET_BRANCH}" --prune >&2
+  git checkout -B "${branch_name}" "origin/${RELEASE_TARGET_BRANCH}" >&2
+  git push --set-upstream origin "${branch_name}" >&2
 
   printf '%s\n' "${branch_name}"
 }
