@@ -1,0 +1,39 @@
+name: Release Revert Develop
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Merged PR number to revert from develop.
+        required: true
+        type: number
+
+concurrency:
+  group: sample-campus-release-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  RELEASE_SOURCE_BRANCH: develop
+  RELEASE_TARGET_BRANCH: main
+  RELEASE_BRANCH_PREFIX: release
+  RELEASE_TIMEZONE: Asia/Ho_Chi_Minh
+
+jobs:
+  revert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create revert PR for develop
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: bash .github/scripts/release/revert-develop.sh

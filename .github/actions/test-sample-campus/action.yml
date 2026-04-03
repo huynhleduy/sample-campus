@@ -1,0 +1,45 @@
+name: Test Sample Campus
+description: Run sample-campus Jest test suite against an injected PostgreSQL service.
+
+inputs:
+  working-directory:
+    description: Project directory.
+    required: false
+    default: .
+  db-host:
+    description: PostgreSQL host.
+    required: true
+  db-port:
+    description: PostgreSQL port.
+    required: true
+  db-username:
+    description: PostgreSQL username.
+    required: true
+  db-password:
+    description: PostgreSQL password.
+    required: true
+  db-database:
+    description: Bootstrap PostgreSQL database name.
+    required: true
+  test-command:
+    description: Jest command to execute.
+    required: false
+    default: yarn test --runInBand
+
+runs:
+  using: composite
+  steps:
+    - name: Run tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        CI: "true"
+        NO_POSTGRES: "true"
+        NO_REDIS: "true"
+        DB_HOST: ${{ inputs.db-host }}
+        DB_PORT: ${{ inputs.db-port }}
+        DB_USERNAME: ${{ inputs.db-username }}
+        DB_PASSWORD: ${{ inputs.db-password }}
+        DB_DATABASE: ${{ inputs.db-database }}
+        NEZON_DISABLE_BOOTSTRAP: "true"
+      run: ${{ inputs.test-command }}

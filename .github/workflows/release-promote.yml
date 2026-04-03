@@ -1,0 +1,33 @@
+name: Release Promote
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sample-campus-release-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  RELEASE_SOURCE_BRANCH: develop
+  RELEASE_TARGET_BRANCH: main
+  RELEASE_BRANCH_PREFIX: release
+  RELEASE_TIMEZONE: Asia/Ho_Chi_Minh
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Promote active release PR
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/release/promote.sh

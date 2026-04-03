@@ -1,0 +1,39 @@
+name: Release Dequeue
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to remove from the active release queue.
+        required: true
+        type: number
+
+concurrency:
+  group: sample-campus-release-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  RELEASE_SOURCE_BRANCH: develop
+  RELEASE_TARGET_BRANCH: main
+  RELEASE_BRANCH_PREFIX: release
+  RELEASE_TIMEZONE: Asia/Ho_Chi_Minh
+
+jobs:
+  dequeue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Dequeue PR from active release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: bash .github/scripts/release/dequeue.sh

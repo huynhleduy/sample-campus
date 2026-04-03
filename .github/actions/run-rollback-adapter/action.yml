@@ -1,0 +1,42 @@
+name: Run Rollback Adapter
+description: Execute a provider-specific rollback adapter without coupling workflows to one platform.
+
+inputs:
+  script-path:
+    description: Path to the rollback adapter script.
+    required: true
+  rollback-target:
+    description: Adapter-specific target to roll back to, such as an image reference or deployment version.
+    required: true
+  environment-name:
+    description: Deployment environment name.
+    required: true
+  reason:
+    description: Human-readable reason for the rollback.
+    required: false
+    default: ""
+  working-directory:
+    description: Optional working directory for the script.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - name: Run rollback adapter
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        ROLLBACK_TARGET: ${{ inputs.rollback-target }}
+        DEPLOY_ENVIRONMENT: ${{ inputs.environment-name }}
+        ROLLBACK_REASON: ${{ inputs.reason }}
+      run: |
+        set -euo pipefail
+
+        if [ ! -f "${{ inputs.script-path }}" ]; then
+          echo "Rollback adapter not found: ${{ inputs.script-path }}"
+          echo "Create the adapter script to enable infrastructure-specific rollback."
+          exit 1
+        fi
+
+        bash "${{ inputs.script-path }}"

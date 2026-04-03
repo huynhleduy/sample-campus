@@ -1,0 +1,37 @@
+name: Release Create
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sample-campus-release-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  RELEASE_SOURCE_BRANCH: develop
+  RELEASE_TARGET_BRANCH: main
+  RELEASE_BRANCH_PREFIX: release
+  RELEASE_TIMEZONE: Asia/Ho_Chi_Minh
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    outputs:
+      release_pr_number: ${{ steps.create.outputs.release_pr_number }}
+      release_branch: ${{ steps.create.outputs.release_branch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure active release PR
+        id: create
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/release/create.sh

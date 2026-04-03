@@ -1,0 +1,50 @@
+name: Release Enqueue
+
+on:
+  pull_request_target:
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Merged PR number to enqueue.
+        required: true
+        type: number
+      force_enqueue:
+        description: Ignore the hold label and enqueue anyway.
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: sample-campus-release-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  RELEASE_SOURCE_BRANCH: develop
+  RELEASE_TARGET_BRANCH: main
+  RELEASE_BRANCH_PREFIX: release
+  RELEASE_TIMEZONE: Asia/Ho_Chi_Minh
+
+jobs:
+  enqueue:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enqueue PR into active release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_MERGE_SHA: ${{ github.event_name == 'workflow_dispatch' && '' || github.event.pull_request.merge_commit_sha }}
+          FORCE_ENQUEUE: ${{ github.event_name == 'workflow_dispatch' && inputs.force_enqueue || 'false' }}
+        run: bash .github/scripts/release/enqueue.sh

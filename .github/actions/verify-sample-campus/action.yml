@@ -1,0 +1,21 @@
+name: Verify Sample Campus
+description: Run static validation for sample-campus.
+
+inputs:
+  working-directory:
+    description: Project directory.
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - name: Lint
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: yarn lint
+
+    - name: Typecheck with tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: yarn build:with-tests --noEmit
