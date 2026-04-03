@@ -134,6 +134,14 @@ list_prs_by_label() {
       '
 }
 
+list_merged_source_prs() {
+  gh pr list \
+    --base "${RELEASE_SOURCE_BRANCH}" \
+    --state merged \
+    --limit 200 \
+    --json number,title,url,mergedAt,labels
+}
+
 release_branch_has_diff() {
   local branch_name="$1"
 
@@ -184,6 +192,36 @@ list_release_branch_pr_entries() {
     title="$(gh pr view "${pr_number}" --json title --jq '.title')"
     echo "- #${pr_number} ${title}"
   done <<< "${pr_numbers}"
+}
+
+list_blocking_merged_prs_before_pr() {
+  local release_branch="$1"
+  local current_pr_number="$2"
+  local queued_pr_numbers merged_prs_json
+
+  queued_pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}" || true)"
+  merged_prs_json="$(list_merged_source_prs)"
+
+  printf '%s' "${merged_prs_json}" | jq -c \
+    --argjson current_pr_number "${current_pr_number}" \
+    --arg queued_pr_numbers "${queued_pr_numbers}" \
+    --arg excluded_label "${RELEASE_EXCLUDED_LABEL}" \
+    --arg hold_label "${RELEASE_HOLD_LABEL}" '
+      ($queued_pr_numbers | split("\n") | map(select(length > 0) | tonumber)) as $queued
+      | sort_by(.mergedAt) as $prs
+      | ($prs | map(.number) | index($current_pr_number)) as $current_index
+      | if $current_index == null then
+          empty
+        else
+          $prs[:$current_index]
+          | map(select(
+              (($queued | index(.number)) == null)
+              and ((.labels | map(.name) | index($excluded_label)) == null)
+              and ((.labels | map(.name) | index($hold_label)) == null)
+            ))
+          | .[]
+        end
+    '
 }
 
 render_release_body() {
