@@ -11,7 +11,8 @@ import { DatabaseSeeder } from './database.seeder';
     SharedModule,
     TypeOrmModule.forRootAsync({
       imports: [SharedModule],
-      useFactory: (configService: AppConfigService) => configService.postgresConfig,
+      useFactory: (configService: AppConfigService) =>
+        configService.postgresConfig,
       inject: [AppConfigService],
     }),
     TypeOrmModule.forFeature(entities),

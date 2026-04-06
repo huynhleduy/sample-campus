@@ -1,19 +1,19 @@
 import {
-  type ModuleMetadata,
   Logger,
+  type ModuleMetadata,
   type Provider,
   type Type,
 } from '@nestjs/common';
+import {
+  ExpressAdapter,
+  type NestExpressApplication,
+} from '@nestjs/platform-express';
 import {
   Test,
   type TestingModule,
   type TestingModuleBuilder,
 } from '@nestjs/testing';
 import { useContainer } from 'class-validator';
-import {
-  ExpressAdapter,
-  type NestExpressApplication,
-} from '@nestjs/platform-express';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { Factory } from '@src/repl-modules/factories/factory';
 import { SHOULD_DEBUG } from './common';
@@ -33,10 +33,9 @@ export async function createTestingApp(
   initializeTransactionalContext();
   await createModule(options);
 
-  testingApp =
-    testingModule!.createNestApplication<NestExpressApplication>(
-      new ExpressAdapter(),
-    );
+  testingApp = testingModule!.createNestApplication<NestExpressApplication>(
+    new ExpressAdapter(),
+  );
 
   const { AppModule } = await import('@src/app.module');
   const bootstrapConfig = (await import('@src/common/configs/boostrap-config'))

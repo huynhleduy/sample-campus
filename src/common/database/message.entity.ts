@@ -1,5 +1,5 @@
-import { AbstractAuditEntity } from '@src/common/database/abstract.entity';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { AbstractAuditEntity } from '@src/common/database/abstract.entity';
 
 @Entity('messages')
 export default class MessageEntity extends AbstractAuditEntity {

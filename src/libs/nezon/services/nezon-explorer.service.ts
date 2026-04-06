@@ -2,18 +2,18 @@ import 'reflect-metadata';
 import { Injectable } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { NEZON_COMMAND_METADATA } from '../decorators/command.decorator';
+import { NEZON_COMPONENT_METADATA } from '../decorators/component.decorator';
 import {
   NEZON_EVENT_METADATA,
   NEZON_EVENT_ONCE_METADATA,
 } from '../decorators/on.decorator';
-import { NEZON_COMPONENT_METADATA } from '../decorators/component.decorator';
+import { NEZON_PARAMS_METADATA } from '../decorators/params.decorator';
+import { NEZON_RESTRICT_METADATA } from '../decorators/restrict.decorator';
 import { NezonCommandDefinition } from '../interfaces/command-definition.interface';
-import { NezonEventDefinition } from '../interfaces/event-definition.interface';
 import { NezonCommandOptions } from '../interfaces/command-options.interface';
 import { NezonComponentDefinition } from '../interfaces/component-definition.interface';
-import { NEZON_PARAMS_METADATA } from '../decorators/params.decorator';
+import { NezonEventDefinition } from '../interfaces/event-definition.interface';
 import { NezonParameterMetadata } from '../interfaces/parameter-metadata.interface';
-import { NEZON_RESTRICT_METADATA } from '../decorators/restrict.decorator';
 import type { NezonRestrictConfig } from '../nezon.module-interface';
 
 @Injectable()
@@ -103,9 +103,8 @@ export class NezonExplorerService {
           if (!event) {
             return;
           }
-          const once = !!this.reflector.get<boolean>(
-            NEZON_EVENT_ONCE_METADATA,
-            methodRef,
+          const once = Boolean(
+            this.reflector.get<boolean>(NEZON_EVENT_ONCE_METADATA, methodRef),
           );
           const classRestrict =
             this.reflector.get<NezonRestrictConfig | undefined>(

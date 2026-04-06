@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
-import { AuthService } from '@src/modules/auth/auth.service';
 import {
   createTestingModule,
   mockFetchJsonOnce,
   mockedFetch,
   testingModule,
 } from '#jest';
+import { AuthService } from '@src/modules/auth/auth.service';
 
 describe(AuthService.name, () => {
   beforeAll(createTestingModule);
@@ -20,14 +20,14 @@ describe(AuthService.name, () => {
 
     const authService = testingModule!.get(AuthService);
 
-    await expect(authService.exchangeCode('code-1', 'state-1')).resolves.toEqual(
-      {
-        access_token: 'access-token',
-        refresh_token: 'refresh-token',
-        expires_in: 900,
-        token_type: 'Bearer',
-      },
-    );
+    await expect(
+      authService.exchangeCode('code-1', 'state-1'),
+    ).resolves.toEqual({
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      expires_in: 900,
+      token_type: 'Bearer',
+    });
 
     expect(mockedFetch).toHaveBeenCalledWith(
       'https://oauth.example.test/oauth2/token',

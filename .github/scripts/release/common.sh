@@ -77,6 +77,62 @@ get_release_sequence() {
       '
 }
 
+get_existing_release_branch_for_date() {
+  local date="$1"
+
+  git ls-remote --heads origin "refs/heads/${RELEASE_BRANCH_PREFIX}/${date}-*" \
+    | sed -n "s#.*refs/heads/\(${RELEASE_BRANCH_PREFIX}/${date}-[0-9][0-9]*\)\$#\1#p" \
+    | sort -t- -k2,2n \
+    | tail -n 1
+}
+
+remote_release_branch_exists() {
+  local branch_name="$1"
+
+  git ls-remote --exit-code --heads origin "refs/heads/${branch_name}" >/dev/null 2>&1
+}
+
+resolve_release_branch_name() {
+  local active_pr date branch_name sequence next_sequence
+
+  active_pr="$(get_active_release_pr)"
+
+  if [ -n "${active_pr}" ]; then
+    printf '%s\n' "$(printf '%s' "${active_pr}" | jq -r '.headRefName')"
+    return 0
+  fi
+
+  date="$(release_date)"
+  branch_name="$(get_existing_release_branch_for_date "${date}")"
+
+  if [ -n "${branch_name}" ]; then
+    printf '%s\n' "${branch_name}"
+    return 0
+  fi
+
+  sequence="$(get_release_sequence "${date}")"
+  next_sequence="$((sequence + 1))"
+  branch_name="${RELEASE_BRANCH_PREFIX}/${date}-${next_sequence}"
+
+  printf '%s\n' "${branch_name}"
+}
+
+ensure_active_release_branch() {
+  local branch_name
+  branch_name="$(resolve_release_branch_name)"
+
+  if remote_release_branch_exists "${branch_name}"; then
+    printf '%s\n' "${branch_name}"
+    return 0
+  fi
+
+  git fetch origin "${RELEASE_TARGET_BRANCH}" --prune >&2
+  git checkout -B "${branch_name}" "origin/${RELEASE_TARGET_BRANCH}" >&2
+  git push --set-upstream origin "${branch_name}" >&2
+
+  printf '%s\n' "${branch_name}"
+}
+
 list_prs_by_label() {
   local label="$1"
 
@@ -96,6 +152,137 @@ list_prs_by_label() {
       '
 }
 
+list_merged_source_prs() {
+  local repo
+  repo="$(repo_name_with_owner)"
+
+  gh api --paginate "repos/${repo}/pulls?state=closed&base=${RELEASE_SOURCE_BRANCH}&per_page=100" \
+    | jq -s '
+        add
+        | map(select(.merged_at != null))
+        | map({
+            number,
+            title,
+            url: .html_url,
+            mergedAt: .merged_at,
+            labels: (.labels // [])
+          })
+      '
+}
+
+list_merged_source_pr_rows() {
+  list_merged_source_prs \
+    | jq -r '
+        sort_by(.mergedAt)
+        | .[]
+        | [
+            (.number | tostring),
+            .mergedAt,
+            (.title | gsub("[\t\r\n]+"; " ")),
+            ((.labels // []) | map(.name) | join(","))
+          ]
+        | @tsv
+      '
+}
+
+release_branch_has_diff() {
+  local branch_name="$1"
+
+  git fetch origin "${RELEASE_TARGET_BRANCH}" "${branch_name}" --prune >&2
+  [ "$(git rev-list --count "origin/${RELEASE_TARGET_BRANCH}..origin/${branch_name}")" -gt 0 ]
+}
+
+list_current_release_branch_pr_numbers() {
+  local release_branch="$1"
+
+  if ! remote_release_branch_exists "${release_branch}"; then
+    return 0
+  fi
+
+  git log --reverse "origin/${release_branch}" \
+    --format='%B%n<<END>>' \
+    | awk '
+        /^Release-Queue-PR: [0-9]+$/ {
+          pr = $2
+          queued[pr] = 1
+          order[++count] = pr
+          next
+        }
+        /^Release-Queue-Dequeue-PR: [0-9]+$/ {
+          delete queued[$2]
+          next
+        }
+        END {
+          for (i = 1; i <= count; i++) {
+            pr = order[i]
+            if (queued[pr] && !printed[pr]++) {
+              print pr
+            }
+          }
+        }
+      '
+}
+
+list_release_branch_pr_entries() {
+  local release_branch="$1"
+  local pr_numbers pr_number title
+
+  pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}")"
+
+  if [ -z "${pr_numbers}" ]; then
+    echo "- None"
+    return 0
+  fi
+
+  while IFS= read -r pr_number; do
+    [ -n "${pr_number}" ] || continue
+    title="$(gh pr view "${pr_number}" --json title --jq '.title')"
+    echo "- #${pr_number} ${title}"
+  done <<< "${pr_numbers}"
+}
+
+list_blocking_merged_prs_before_pr() {
+  local release_branch="$1"
+  local current_pr_number="$2"
+  local current_pr_merged_at="$3"
+  local queued_pr_numbers pr_number pr_merged_at pr_title pr_labels
+  declare -A queued_pr_map=()
+
+  queued_pr_numbers="$(list_current_release_branch_pr_numbers "${release_branch}")"
+
+  while IFS= read -r queued_pr_number; do
+    [ -n "${queued_pr_number}" ] || continue
+    queued_pr_map["${queued_pr_number}"]=1
+  done <<< "${queued_pr_numbers}"
+
+  while IFS=$'\t' read -r pr_number pr_merged_at pr_title pr_labels; do
+    [ -n "${pr_number}" ] || continue
+
+    if [ "${pr_number}" = "${current_pr_number}" ]; then
+      continue
+    fi
+
+    if ! {
+      [ "${pr_merged_at}" \< "${current_pr_merged_at}" ] \
+        || { [ "${pr_merged_at}" = "${current_pr_merged_at}" ] && [ "${pr_number}" -lt "${current_pr_number}" ]; }
+    }; then
+      continue
+    fi
+
+    if [ -n "${queued_pr_map[${pr_number}]:-}" ]; then
+      continue
+    fi
+
+    case ",${pr_labels}," in
+      *",${RELEASE_REVERTED_LABEL},"*|*",${RELEASE_EXCLUDED_LABEL},"*)
+        continue
+        ;;
+    esac
+
+    printf '%s\t%s\n' "${pr_number}" "${pr_title}"
+  done < <(list_merged_source_pr_rows)
+}
+
 render_release_body() {
   local branch_name="$1"
 
@@ -108,7 +295,7 @@ render_release_body() {
 - Synced at: $(release_now)
 
 ### Queued
-$(list_prs_by_label "${RELEASE_QUEUE_LABEL}")
+$(list_release_branch_pr_entries "${branch_name}")
 
 ### Hold
 $(list_prs_by_label "${RELEASE_HOLD_LABEL}")
@@ -131,7 +318,8 @@ sync_release_pr_body() {
   rm -f "${body_file}"
 }
 
-ensure_active_release_pr() {
+ensure_active_release_pr_for_branch() {
+  local branch_name="$1"
   local active_pr
   active_pr="$(get_active_release_pr)"
 
@@ -141,25 +329,24 @@ ensure_active_release_pr() {
     return 0
   fi
 
-  local date sequence next_sequence branch_name title pr_url pr_number
-  date="$(release_date)"
-  sequence="$(get_release_sequence "${date}")"
-  next_sequence="$((sequence + 1))"
-  branch_name="${RELEASE_BRANCH_PREFIX}/${date}-${next_sequence}"
-  title="Release-${date}_${next_sequence}"
-
-  git fetch origin "${RELEASE_TARGET_BRANCH}" --prune
-  git checkout -B "${branch_name}" "origin/${RELEASE_TARGET_BRANCH}"
-  git push --set-upstream origin "${branch_name}"
+  if ! release_branch_has_diff "${branch_name}"; then
+    return 1
+  fi
 
   local body_file
   body_file="$(mktemp)"
   render_release_body "${branch_name}" > "${body_file}"
-  pr_url="$(gh pr create \
+  local title pr_url pr_number
+  title="Release-$(release_date)_$(printf '%s' "${branch_name}" | awk -F- '{print $NF}')"
+  if ! pr_url="$(gh pr create \
     --base "${RELEASE_TARGET_BRANCH}" \
     --head "${branch_name}" \
     --title "${title}" \
-    --body-file "${body_file}")"
+    --body-file "${body_file}")"; then
+    rm -f "${body_file}"
+    echo "Failed to create release PR for ${branch_name}. Ensure GitHub Actions is allowed to create pull requests for this repository." >&2
+    return 1
+  fi
   rm -f "${body_file}"
 
   pr_number="$(gh pr view "${pr_url}" --json number --jq '.number')"
@@ -191,16 +378,6 @@ add_label_if_missing() {
   if ! pr_has_label "${pr_number}" "${label}"; then
     gh pr edit "${pr_number}" --add-label "${label}"
   fi
-}
-
-list_release_branch_pr_numbers() {
-  local release_branch="$1"
-
-  git log "origin/${release_branch}" \
-    --grep='Release-Queue-PR: ' \
-    --format='%B' \
-    | sed -n 's/^Release-Queue-PR: \([0-9][0-9]*\)$/\1/p' \
-    | awk '!seen[$0]++'
 }
 
 get_release_branch_commit_for_pr() {
@@ -270,6 +447,23 @@ Release-Queue-Dequeue-PR: ${pr_number}"
   if [ -n "${comment_body}" ]; then
     gh pr comment "${pr_number}" --body "${comment_body}"
   fi
+}
+
+repo_name_with_owner() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s\n' "${GITHUB_REPOSITORY}"
+    return 0
+  fi
+
+  gh repo view --json nameWithOwner --jq '.nameWithOwner'
+}
+
+list_pr_commit_shas() {
+  local pr_number="$1"
+  local repo
+  repo="$(repo_name_with_owner)"
+
+  gh api "repos/${repo}/pulls/${pr_number}/commits" --jq '.[].sha'
 }
 
 ensure_backmerge_pr() {

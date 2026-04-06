@@ -1,6 +1,6 @@
-import type UserEntity from '@src/modules/user/user.entity';
-import { UserService } from '@src/modules/user/user.service';
 import { createTestingModule, factory, testingModule } from '#jest';
+import { UserService } from '@src/modules/user/user.service';
+import type UserEntity from '@src/modules/user/user.entity';
 
 describe(UserService.name, () => {
   beforeAll(createTestingModule);
@@ -40,7 +40,9 @@ describe(UserService.name, () => {
 
     await updateSession.save();
 
-    await expect(userService.findByMezonId('crud-update-user')).resolves.toMatchObject({
+    await expect(
+      userService.findByMezonId('crud-update-user'),
+    ).resolves.toMatchObject({
       mezonId: 'crud-update-user',
       name: 'After Update',
       avatar: 'https://avatar.example.test/updated.png',
@@ -59,7 +61,9 @@ describe(UserService.name, () => {
       name: 'Entry After',
     });
 
-    await expect(userService.findByMezonId('crud-entry-user')).resolves.toMatchObject({
+    await expect(
+      userService.findByMezonId('crud-entry-user'),
+    ).resolves.toMatchObject({
       mezonId: 'crud-entry-user',
       name: 'Entry After',
     } satisfies Partial<UserEntity>);

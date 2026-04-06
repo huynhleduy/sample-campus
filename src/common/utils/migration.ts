@@ -49,7 +49,9 @@ function parseQuery(
     if (Array.isArray(value)) {
       criteria = criteria.replaceAll(
         new RegExp(`:${key}`, 'g'),
-        value.map((item) => addParameter(result.filterQueryParameters, item)).join(', '),
+        value
+          .map((item) => addParameter(result.filterQueryParameters, item))
+          .join(', '),
       );
       continue;
     }
@@ -349,9 +351,10 @@ export async function bulkUpdateInMigration<
   }
 
   const [criteriaColumnRaw, criteriaColumnType] = criteriaColumn.split('::');
-  const parsedColumns = columns.map((column) =>
-    String(column).split('::'),
-  ) as [columnRaw: string, columnType?: string][];
+  const parsedColumns = columns.map((column) => String(column).split('::')) as [
+    columnRaw: string,
+    columnType?: string,
+  ][];
   const parameters: unknown[] = [...filterQueryParameters];
   const values: string[] = [];
 
@@ -366,7 +369,9 @@ export async function bulkUpdateInMigration<
       value.push(addParameter(parameters, update[columnRaw], columnType));
     }
 
-    value.push(addParameter(parameters, criteriaColumnValue, criteriaColumnType));
+    value.push(
+      addParameter(parameters, criteriaColumnValue, criteriaColumnType),
+    );
     values.push(`(${value.join(', ')})`);
   }
 
@@ -419,7 +424,9 @@ export async function addValuesToEnumInMigration(
     .map((value) => `'${value}'`)
     .join(', ');
 
-  await queryRunner.query(`CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`);
+  await queryRunner.query(
+    `CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`,
+  );
 }
 
 export async function addValuesToEnumInMigrationV2({
@@ -441,13 +448,21 @@ export async function addValuesToEnumInMigrationV2({
     )
     .then((res) => res[0].enum_name as string);
 
-  const existingValues = await listEnumValuesInMigration(queryRunner, enumName, []);
+  const existingValues = await listEnumValuesInMigration(
+    queryRunner,
+    enumName,
+    [],
+  );
   const newValues = [...new Set(existingValues.concat(values))]
     .map((value) => `'${value}'`)
     .join(', ');
 
-  await queryRunner.query(`ALTER TYPE "public"."${enumName}" RENAME TO "${enumName}_old"`);
-  await queryRunner.query(`CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`);
+  await queryRunner.query(
+    `ALTER TYPE "public"."${enumName}" RENAME TO "${enumName}_old"`,
+  );
+  await queryRunner.query(
+    `CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`,
+  );
   await queryRunner.query(
     `ALTER TABLE "${tableName}" ALTER COLUMN "${columnName}" TYPE "public"."${enumName}" USING "${columnName}"::"text"::"public"."${enumName}"`,
   );
@@ -462,7 +477,9 @@ export async function listEnumValuesInMigration(
   const rawValues = await queryRunner.query(
     `SELECT UNNEST(ENUM_RANGE(NULL::"public"."${enumName}"))`,
   );
-  const values: string[] = rawValues.map((value: { unnest: string }) => value.unnest);
+  const values: string[] = rawValues.map(
+    (value: { unnest: string }) => value.unnest,
+  );
 
   for (const value of valuesToFilter) {
     if (values.includes(value)) {
@@ -492,7 +509,9 @@ export async function removeValuesFromEnumInMigration(
     throw new Error('All enum values are removed!');
   }
 
-  await queryRunner.query(`CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`);
+  await queryRunner.query(
+    `CREATE TYPE "public"."${enumName}" AS ENUM(${newValues})`,
+  );
 }
 
 export async function removeValuesFromEnumInMigrationV2({
@@ -525,12 +544,17 @@ export async function removeValuesFromEnumInMigrationV2({
     throw new Error('All enum values are removed!');
   }
 
-  await queryRunner.query(`CREATE TYPE "public"."${enumName}_old" AS ENUM(${newValues})`);
   await queryRunner.query(
-    `ALTER TABLE "${tableName}" ALTER COLUMN "${columnName}" TYPE "public"."${enumName}_old" USING "${columnName}"::"text"::"public"."${enumName}_old"`,
+    `CREATE TYPE "public"."${enumName}_old" AS ENUM(${newValues})`,
+  );
+  await queryRunner.query(
+    `ALTER TABLE "${tableName}" ALTER COLUMN "${columnName}" TYPE "public"."${enumName}_old" ` +
+      `USING "${columnName}"::"text"::"public"."${enumName}_old"`,
   );
   await queryRunner.query(`DROP TYPE "public"."${enumName}"`);
-  await queryRunner.query(`ALTER TYPE "public"."${enumName}_old" RENAME TO "${enumName}"`);
+  await queryRunner.query(
+    `ALTER TYPE "public"."${enumName}_old" RENAME TO "${enumName}"`,
+  );
 }
 
 export type TTypedColumnName<T extends Record<string, unknown>> =

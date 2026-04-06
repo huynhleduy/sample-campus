@@ -4,6 +4,8 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "database/migrations/*.ts",
+    "jest.config.ts",
+    "jest.config.base.ts",
     "typeorm.config.ts",
     "ormconfig.ts",
     "scripts/**/*.mts",

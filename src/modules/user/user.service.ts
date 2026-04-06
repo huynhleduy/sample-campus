@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CRUDService } from '@src/common/utils/crud';
 import { isEmpty } from 'lodash';
 import { In, Repository } from 'typeorm';
+import { CRUDService } from '@src/common/utils/crud';
 import UserEntity from './user.entity';
 
 type UpsertUserMeta = {
@@ -64,7 +64,9 @@ export class UserService extends CRUDService<UserEntity> {
     const orConditions: Array<import('typeorm').FindOptionsWhere<UserEntity>> =
       [];
     if (ids?.length) {
-      orConditions.push({ mezonId: In(ids.map((id) => parseInt(id))) });
+      orConditions.push({
+        mezonId: In(ids.map((id) => parseInt(id, 10))),
+      });
     }
     if (mezonIds?.length) {
       orConditions.push({ mezonId: In(mezonIds) });

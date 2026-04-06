@@ -1,11 +1,11 @@
 import {
+  CrudConfigService,
   CrudController,
   CrudRequest,
-  type QueryOptions,
-  CrudConfigService,
   CrudRequestInterceptor,
   Override,
   ParsedRequest,
+  type QueryOptions,
 } from '@nestjsx/crud';
 import {
   ComparisonOperator,
@@ -28,7 +28,9 @@ import {
   type UpdateResult,
 } from 'typeorm';
 
-export abstract class CRUDService<Entity extends ObjectLiteral> extends TypeOrmCrudService<Entity> {
+export abstract class CRUDService<
+  Entity extends ObjectLiteral,
+> extends TypeOrmCrudService<Entity> {
   public async updateOne(req: CrudRequest, dto: DeepPartial<Entity>) {
     const { allowParamsOverride, returnShallow } =
       req.options.routes?.updateOneBase ?? {};
@@ -82,7 +84,12 @@ export abstract class CRUDService<Entity extends ObjectLiteral> extends TypeOrmC
           ...Object.keys(entity as Record<string, unknown>),
           ...Object.keys(previousState),
         ])) {
-          if (!isEqual((entity as Record<string, unknown>)[key], previousState[key])) {
+          if (
+            !isEqual(
+              (entity as Record<string, unknown>)[key],
+              previousState[key],
+            )
+          ) {
             updates[key] = (entity as Record<string, unknown>)[key];
           }
         }
@@ -228,18 +235,21 @@ export abstract class CRUDService<Entity extends ObjectLiteral> extends TypeOrmC
       );
     }
 
-    return primaryColumns.reduce<Record<string, unknown>>((condition, column) => {
-      const value = (entity as Record<string, unknown>)[column.propertyName];
+    return primaryColumns.reduce<Record<string, unknown>>(
+      (condition, column) => {
+        const value = (entity as Record<string, unknown>)[column.propertyName];
 
-      if (value === undefined) {
-        throw new Error(
-          `Primary key "${column.propertyName}" is missing on ${this.repo.metadata.name}`,
-        );
-      }
+        if (value === undefined) {
+          throw new Error(
+            `Primary key "${column.propertyName}" is missing on ${this.repo.metadata.name}`,
+          );
+        }
 
-      condition[column.propertyName] = value;
-      return condition;
-    }, {}) as FindOptionsWhere<Entity>;
+        condition[column.propertyName] = value;
+        return condition;
+      },
+      {},
+    ) as FindOptionsWhere<Entity>;
   }
 
   private removeReadonlyFields(updates: Record<string, unknown>) {
@@ -321,8 +331,7 @@ export abstract class CRUDService<Entity extends ObjectLiteral> extends TypeOrmC
 export abstract class CRUDController<
   Entity extends ObjectLiteral,
   Service extends CRUDService<Entity>,
-> implements CrudController<Entity>
-{
+> implements CrudController<Entity> {
   protected constructor(public readonly service: Service) {}
 
   protected get crud(): CrudController<Entity> {

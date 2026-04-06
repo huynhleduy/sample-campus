@@ -13,15 +13,17 @@ export const NO_POSTGRES = env.NO_POSTGRES === 'true';
 export async function startPostgres(
   database: string,
 ): Promise<StartedPostgreSqlContainer> {
-  postgresContainer = await new PostgreSqlContainer(
-    'postgres:15.5-alpine',
-  ).withDatabase(database).start();
+  postgresContainer = await new PostgreSqlContainer('postgres:15.5-alpine')
+    .withDatabase(database)
+    .start();
   startedByTestcontainers = true;
 
   return postgresContainer;
 }
 
-export async function stopPostgres(): Promise<StoppedTestContainer | undefined> {
+export async function stopPostgres(): Promise<
+  StoppedTestContainer | undefined
+> {
   if (!startedByTestcontainers) {
     return undefined;
   }
@@ -38,7 +40,9 @@ export function isContainerRuntimeUnavailable(error: unknown): boolean {
   }
 
   return (
-    error.message.includes('Could not find a working container runtime strategy') ||
+    error.message.includes(
+      'Could not find a working container runtime strategy',
+    ) ||
     error.message.includes('docker daemon') ||
     error.message.includes('docker.sock') ||
     error.message.includes('operation not permitted')

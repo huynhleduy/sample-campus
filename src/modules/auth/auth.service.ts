@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AppConfigService } from '@src/common/shared/services/app-config.service';
 import UserEntity from '@src/modules/user/user.entity';
 import { UserService } from '../user/user.service';
+
 export interface ExchangeCodeData {
   access_token: string;
   refresh_token: string;
@@ -49,12 +50,8 @@ export class AuthService {
     return data;
   }
 
-  async refreshToken() {
-    try {
-      
-    } catch (error) {
-      throw new BadRequestException('Invalid refresh token');
-    }
+  async refreshToken(): Promise<ExchangeCodeData> {
+    throw new BadRequestException('Refresh token flow is not implemented');
   }
 
   async userInfo(accessToken: string): Promise<UserInfoData> {
@@ -93,18 +90,15 @@ export class AuthService {
     return `${oauthConfig.baseUri}/oauth2/auth?${params.toString()}`;
   }
 
-  async handleOAuthExchange() {
+  async handleOAuthExchange(): Promise<ExchangeCodeData> {
+    throw new BadRequestException('OAuth exchange is not implemented');
   }
 
-  async handleRefreshToken(refreshToken: string) {
+  async handleRefreshToken(refreshToken: string): Promise<ExchangeCodeData> {
     if (!refreshToken) {
       throw new BadRequestException('No refresh token provided');
     }
-
-    try {
-    } catch (error) {
-      throw new BadRequestException('Invalid refresh token');
-    }
+    throw new BadRequestException('Token refresh is not implemented');
   }
 
   async validateUser(userId: string): Promise<UserEntity | null> {

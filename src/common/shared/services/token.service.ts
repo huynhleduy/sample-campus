@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

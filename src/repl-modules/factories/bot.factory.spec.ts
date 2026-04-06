@@ -1,4 +1,7 @@
-import { channelMessage, messageButtonClicked } from '@src/repl-modules/factories';
+import {
+  channelMessage,
+  messageButtonClicked,
+} from '@src/repl-modules/factories';
 
 describe('Bot Factories', () => {
   it('creates a channel message fixture for bot-side tests', () => {

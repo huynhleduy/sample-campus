@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { MezonClient } from 'mezon-sdk';
+import { setClientService } from './get-mezon-client';
 import { NEZON_MODULE_OPTIONS } from '../nezon-configurable';
 import { NezonModuleOptions } from '../nezon.module-interface';
-import { setClientService } from './get-mezon-client';
 
 @Injectable()
 export class NezonClientService {

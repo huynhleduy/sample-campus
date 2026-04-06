@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/named
 import { ValueTransformer } from 'typeorm';
 
 export class JsonTransformer implements ValueTransformer {

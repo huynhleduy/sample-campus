@@ -38,7 +38,9 @@ function parseEnvFile(filePath: string): Record<string, string> {
   return parsed;
 }
 
-export function loadProjectEnv(projectRoot = process.cwd()): Record<string, string> {
+export function loadProjectEnv(
+  projectRoot = process.cwd(),
+): Record<string, string> {
   const envPath = path.join(projectRoot, '.env');
   return parseEnvFile(envPath);
 }
